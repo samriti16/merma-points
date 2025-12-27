@@ -5,77 +5,74 @@ body{
   text-align:center;
 }
 
-.hidden{ display:none; }
-
-video{
-  width:90%;
-  border-radius:10px;
+.hidden{
+  display:none;
 }
 
-#cameraWrapper{
-  position:relative;
-}
-
-#overlay{
-  position:absolute;
-  top:0;
-  left:0;
-  width:90%;
-}
-
-.marma-point{
-  width:18px;
-  height:18px;
-  background:red;
-  border-radius:50%;
-  border:2px solid white;
-  position:absolute;
-}
-
-.measure-rect{
-  width:120px;
-  height:200px;
-  border:2px dashed cyan;
-  margin:auto;
-}
-
-.popup{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:15px 15px 0 0;
-}
+/* VIDEO CONTAINER */
 #canvasArea{
-  position: relative;
-  display: inline-block;
+  position:relative;
+  display:inline-block;
 }
 
+/* SINGLE VIDEO */
 #video{
-  width: 90%;
+  width:90vw;
+  max-width:480px;
   border:2px solid cyan;
   border-radius:12px;
 }
 
-#overlay{
+/* MARMA POINT OVERLAY */
+#points{
   position:absolute;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  pointer-events:none;
 }
 
-#heightBox{
-  pointer-events:none;
+/* RED DOTS */
+.marma-point{
+  width:16px;
+  height:16px;
+  background:red;
+  border:2px solid white;
+  border-radius:50%;
   position:absolute;
-  border:2px dashed yellow;
-  width:120px;
-  height:200px;
+  transform:translate(-50%, -50%);
+  cursor:pointer;
+}
+
+/* FINGER MEASURE BOX */
+.box{
+  border:2px dashed cyan;
+  width:42px;
+  height:120px;
+  margin:auto;
+}
+
+/* HEIGHT MEASURE BOX – CENTERED OVER VIDEO */
+#heightBox{
+  position:absolute;
+  top:10%;
   left:50%;
   transform:translateX(-50%);
+  border:2px dashed yellow;
+  width:120px;
+  pointer-events:none;
 }
 
+/* POPUP */
+.popup{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  color:white;
+  padding:18px;
+  border-radius:14px;
+  border:1px solid white;
+  width:85%;
+}
