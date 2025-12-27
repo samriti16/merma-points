@@ -2,166 +2,102 @@ let angulPx = 60;
 let heightPx = 600;
 let totalAngul = 0;
 
-let currentFacing = "environment";
+const video = document.getElementById("video");
+const pointsDiv = document.getElementById("points");
 
-const video = document.getElementById("arVideo");
-const overlay = document.getElementById("overlay");
-const ctx = overlay.getContext("2d");
-
-let pose;
-let camera;
-
-// ======== NAVIGATION ========
-
-function goToFingerMeasure(){
-  screen1.classList.add("hidden");
-  screen2.classList.remove("hidden");
+//
+// ---------- NAVIGATION ----------
+//
+function goToFinger(){
+ screen0.classList.add("hidden");
+ screen1.classList.remove("hidden");
 }
 
-function goToHeightMeasure(){
-  screen2.classList.add("hidden");
-  screen3.classList.remove("hidden");
-
-  startCamera();
+function goToHeight(){
+ screen1.classList.add("hidden");
+ screen2.classList.remove("hidden");
 }
 
-async function startAR(){
-  screen3.classList.add("hidden");
-  screen4.classList.remove("hidden");
-
-  document.getElementById("status").innerText =
-    "Analyzing… Please hold still";
-
-  await startCamera();
-
-  setTimeout(()=>{
-    runPoseDetection();
-  },2000);
+function goToAR(){
+ screen2.classList.add("hidden");
+ screen3.classList.remove("hidden");
+ startCamera();
 }
 
-// ======== ANGUL ========
-
+//
+// ---------- ANGUL ----------
+//
 function updateAngul(){
-  angulPx = angulSlider.value;
-  angulValue.innerText = angulPx;
-  angulBox.style.width = angulPx+"px";
+ angulPx = angulSlider.value;
+ angulValue.innerText = angulPx;
+ angulBox.style.width = angulPx+"px";
 }
 
-// ======== HEIGHT ========
-
+//
+// ---------- HEIGHT ----------
+//
 function updateHeight(){
-  heightPx = heightSlider.value;
-  heightPx.innerText = heightPx;
-
-  totalAngul = Math.round(heightPx / angulPx);
-  totalAngulText.innerText = totalAngul;
-
-  heightBox.style.height = heightPx+"px";
+ heightPx = heightSlider.value;
+ totalAngul = Math.round(heightPx/angulPx);
+ angulTotal.innerText = totalAngul;
+ heightBox.style.height = heightPx/4+"px";
 }
 
-// ======== CAMERA ========
-
+//
+// ---------- CAMERA START ----------
+//
 async function startCamera(){
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video:{facingMode: currentFacing},
-    audio:false
-  });
 
-  video.srcObject = stream;
-  arVideo.srcObject = stream;
+ try{
+   const stream = await navigator.mediaDevices.getUserMedia({
+     video:{facingMode:{ideal:"environment"}},
+     audio:false
+   });
+
+   video.srcObject = stream;
+   statusText.innerText = "Camera Active ✔ Point camera at body";
+
+ }catch(e){
+   statusText.innerText = "Camera blocked: "+e.message;
+ }
 }
 
-// SWITCH FRONT/BACK
-function switchCamera(){
-  currentFacing = currentFacing === "environment" ? "user" : "environment";
-  startCamera();
+//
+// ---------- ANALYZE BODY ----------
+// (currently simulated marma layout)
+//
+function analyze(){
+
+ pointsDiv.innerHTML="";
+
+ const map = [
+ {y:0.18,name:"Ani Marma",txt:"Shoulder joint marma"},
+ {y:0.30,name:"Hridaya Marma",txt:"Heart centre marma"},
+ {y:0.50,name:"Sthanmoola",txt:"Chest base marma"},
+ {y:0.70,name:"Indravasti",txt:"Calf marma"},
+ {y:0.85,name:"Janu",txt:"Knee marma"}
+ ];
+
+ map.forEach(m=>{
+  const d=document.createElement("div");
+  d.className="mar-point";
+  d.style.left="50%";
+  d.style.top=(video.clientHeight*m.y)+"px";
+  d.onclick=()=>openPopup(m.name,m.txt);
+  pointsDiv.appendChild(d);
+ });
+
 }
 
-// ======== MEDIAPIPE POSE ========
-
-function runPoseDetection(){
-
-  pose = new Pose({
-    locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
-  });
-
-  pose.setOptions({
-    modelComplexity:1,
-    smoothLandmarks:true,
-    enableSegmentation:false,
-    minDetectionConfidence:0.5,
-    minTrackingConfidence:0.5
-  });
-
-  pose.onResults(renderMarma);
-
-  camera = new Camera(arVideo,{
-    onFrame: async ()=>{
-      await pose.send({image:arVideo});
-    },
-    width:640,
-    height:480
-  });
-
-  camera.start();
-}
-
-// ======== MAPPING LANDMARKS TO MARMA ========
-
-function renderMarma(results){
-
-  ctx.clearRect(0,0,overlay.width,overlay.height);
-
-  if(!results.poseLandmarks){return;}
-
-  let lm = results.poseLandmarks;
-
-  // selected anatomical anchors
-  let head = lm[0];
-  let chest = lm[12];
-  let navel = lm[24];
-  let knee = lm[26];
-  let ankle = lm[28];
-
-  drawPoint(head,"Sringataka Marma","Head marma – senses & mind");
-  drawPoint(chest,"Hridaya Marma","Heart centre – Prana & Ojas");
-  drawPoint(navel,"Nabhi Marma","Digestive fire control");
-  drawPoint(knee,"Janu Marma","Knee marma for locomotion");
-  drawPoint(ankle,"Gulpha Marma","Ankle marma balance control");
-
-  document.getElementById("status").innerText =
-    "Tap points to read Ayurveda description";
-}
-
-// ======== DRAW INTERACTIVE POINT ========
-
-function drawPoint(lm,name,text){
-
-  const x = lm.x * overlay.width;
-  const y = lm.y * overlay.height;
-
-  ctx.beginPath();
-  ctx.fillStyle="red";
-  ctx.arc(x,y,8,0,Math.PI*2);
-  ctx.fill();
-  ctx.strokeStyle="white";
-  ctx.stroke();
-
-  overlay.onclick = function(e){
-    let dx=e.offsetX-x;
-    let dy=e.offsetY-y;
-    if(dx*dx+dy*dy < 150) openPopup(name,text);
-  }
-}
-
-// ======== POPUP ========
-
-function openPopup(t,d){
-  popupTitle.innerText=t;
-  popupText.innerText=d;
-  popup.classList.remove("hidden");
+//
+// ---------- POPUP ----------
+//
+function openPopup(a,b){
+ popup.classList.remove("hidden");
+ pTitle.innerText=a;
+ pText.innerText=b;
 }
 
 function closePopup(){
-  popup.classList.add("hidden");
+ popup.classList.add("hidden");
 }
