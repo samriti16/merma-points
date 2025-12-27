@@ -6,7 +6,7 @@ body{
 }
 
 .hidden{
-  display:none;
+  display:none !important;
 }
 
 /* VIDEO CONTAINER */
@@ -15,12 +15,20 @@ body{
   display:inline-block;
 }
 
-/* SINGLE VIDEO */
+/* VIDEO (cannot block clicks) */
 #video{
   width:90vw;
   max-width:480px;
+  min-height:240px;
   border:2px solid cyan;
   border-radius:12px;
+  background:black;
+
+  position:relative;
+  z-index:1;
+
+  /* 👇 important: allow clicking dots */
+  pointer-events:none;
 }
 
 /* DOT OVERLAY */
@@ -30,11 +38,13 @@ body{
   left:0;
   width:100%;
   height:100%;
-  pointer-events:auto;
+
+  z-index:3;           /* above video */
+  pointer-events:auto; /* clicks enabled */
 }
 
 /* RED DOTS */
-.marma-point{
+.mar-point{
   width:16px;
   height:16px;
   background:red;
@@ -43,6 +53,8 @@ body{
   position:absolute;
   transform:translate(-50%, -50%);
   cursor:pointer;
+
+  z-index:4;           /* above overlay */
 }
 
 /* FINGER MEASUREMENT BOX */
@@ -62,6 +74,8 @@ body{
   border:2px dashed yellow;
   width:120px;
   height:200px;
+
+  z-index:2;
   pointer-events:none;
 }
 
@@ -77,15 +91,6 @@ body{
   border-radius:14px;
   border:1px solid white;
   width:85%;
-}
-#video{
-  width: 90vw;
-  max-width: 480px;
-  min-height: 240px;
-  background:black;
-}
-.hidden{
-  display:none !important;
-}
 
-
+  z-index:9999;     /* 👈 always on top */
+}
