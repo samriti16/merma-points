@@ -17,63 +17,69 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   margin:auto;
 }
 
-/* height box */
-#heightBox{
-  border:2px dashed yellow;
-  width:120px;
-  height:200px;
+/* MAIN CANVAS AREA */
+#canvasArea{
+  position:relative;
+  width:90vw;
   margin:auto;
 }
 
-/* video + overlay */
-#canvasArea{
-  position:relative;
-  display:inline-block;
-}
-
-/* single camera feed */
+/* single video used in ALL steps */
 #video{
- width:90vw;
- border:2px solid cyan;
- border-radius:12px;
+  width:100%;
+  border:2px solid cyan;
+  border-radius:14px;
+  display:block;
 }
 
-/* marma overlay layer */
+/* yellow height measurement box */
+#heightBox{
+  position:absolute;
+  border:2px dashed yellow;
+  width:120px;
+  height:200px;
+  left:50%;
+  top:10%;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+
+/* marma overlay points */
 #points{
- position:absolute;
- top:0;
- left:0;
- width:100%;
- height:100%;
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
 }
 
-/* red points */
+/* clickable marma dots */
 .mar-point{
- width:14px;
- height:14px;
- background:red;
- border-radius:50%;
- border:2px solid white;
- position:absolute;
- transform:translate(-50%,-50%);
- cursor:pointer;
+  width:14px;
+  height:14px;
+  background:red;
+  border-radius:50%;
+  border:2px solid white;
+  position:absolute;
+  transform:translate(-50%,-50%);
+  cursor:pointer;
 }
 
 /* popup */
 .popup{
- background:#111;
- padding:15px;
- border-radius:12px;
- border:1px solid white;
- position:fixed;
- bottom:20px;
- left:50%;
- transform:translateX(-50%);
- width:85%;
+  background:#111;
+  padding:15px;
+  border-radius:12px;
+  border:1px solid white;
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:85%;
 }
 </style>
 
-<!-- Mediapipe Libraries (correct + only once) -->
+<!-- Mediapipe -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 
@@ -85,59 +91,62 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
 <!-- STEP 0 -->
 <div id="screen0">
-<p>By continuing you consent to camera access for AR body landmark visualization.</p>
-<button onclick="goToFinger()">Start</button>
+  <p>By continuing you consent to camera access for AR body landmark visualization.</p>
+  <button onclick="goToFinger()">Start</button>
 </div>
 
 <!-- STEP 1 -->
 <div id="screen1" class="hidden">
-<h3>Step 1 — Measure Angul</h3>
-<p>Place finger & match rectangle width</p>
+  <h3>Step 1 — Measure Angul</h3>
+  <p>Place finger and match rectangle width</p>
 
-<div class="box" id="angulBox"></div>
+  <div class="box" id="angulBox"></div>
 
-<input type="range" id="angulSlider" min="20" max="120" value="42" oninput="updateAngul()">
+  <input type="range" id="angulSlider" min="20" max="120" value="42" oninput="updateAngul()">
 
-<p>1 Angul = <span id="angulValue">42</span> pixels</p>
+  <p>1 Angul = <span id="angulValue">42</span> pixels</p>
 
-<button onclick="goToHeight()">Next → Height Measurement</button>
+  <button onclick="goToHeight()">Next → Height Measurement</button>
 </div>
 
 <!-- STEP 2 -->
 <div id="screen2" class="hidden">
-<h3>Step 2 — Measure Height</h3>
+  <h3>Step 2 — Measure Height</h3>
 
-<p id="status2">Camera loading…</p>
+  <p id="status2">Camera loading…</p>
 
-<video id="video" autoplay playsinline muted></video>
+  <div id="canvasArea">
+      <video id="video" autoplay playsinline muted></video>
+      <div id="heightBox"></div>
+  </div>
 
-<div id="heightBox"></div>
+  <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
-<input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
+  <p>Total height in Angul = <span id="angulTotal">0</span></p>
 
-<p>Total height in Angul = <span id="angulTotal">0</span></p>
-
-<button onclick="goToAR()">Start AR Visualization</button>
+  <button onclick="goToAR()">Start AR Visualization</button>
 </div>
 
 <!-- STEP 3 -->
 <div id="screen3" class="hidden">
-<p id="statusText">Point camera at full body</p>
-<div id="canvasArea">
-  <video id="video" autoplay playsinline muted></video>
-  <div id="points"></div>
-  <div id="heightBox"></div>
-</div>
-<button onclick="analyze()">Analyze Body</button>
-<button onclick="switchCamera()">Switch Camera</button>
+
+  <p id="statusText">Point camera at full body</p>
+
+  <div id="canvasArea">
+      <video id="video" autoplay playsinline muted></video>
+      <div id="points"></div>
+  </div>
+
+  <button onclick="analyze()">Analyze Body</button>
+  <button onclick="switchCamera()">Switch Camera</button>
 
 </div>
 
 <!-- POPUP -->
 <div id="popup" class="hidden popup">
-<h3 id="pTitle"></h3>
-<p id="pText"></p>
-<button onclick="closePopup()">Close</button>
+  <h3 id="pTitle"></h3>
+  <p id="pText"></p>
+  <button onclick="closePopup()">Close</button>
 </div>
 
 <script src="script.js" defer></script>
