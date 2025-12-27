@@ -1,4 +1,7 @@
-//
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM ready – starting camera");
+});
+
 // ----------- GLOBAL VALUES -----------
 let angulPx = 42;
 let heightPx = 600;
@@ -18,38 +21,41 @@ let useBackCamera = true;
 // ---------- START CAMERA ----------
 async function startCamera() {
 
-  // stop previous camera
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-  }
-
   try {
 
-    const constraints = {
-      video: { facingMode: useBackCamera ? "environment" : "user" },
+    // stop old stream if exists
+    if (currentStream) {
+      currentStream.getTracks().forEach(t => t.stop());
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: useBackCamera ? { ideal: "environment" } : "user"
+      },
       audio: false
-    };
-
-    console.log("🎥 requesting camera:", constraints);
-
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    });
 
     currentStream = stream;
+
     video.srcObject = stream;
 
-    await video.play();
-
-    if (status2) status2.innerText = "Camera Active ✔";
-    if (statusText) statusText.innerText = "Camera Active ✔";
+    video.onloadeddata = () => {
+      video.play();
+      console.log("🎥 video playing");
+      if (status2) status2.innerText = "Camera Active ✔";
+      if (statusText) statusText.innerText = "Camera Active ✔";
+    };
 
   } catch (err) {
 
-    console.error("❌ CAMERA ERROR:", err.name, err.message);
+    console.error("❌ Camera error:", err);
 
-    if (status2) status2.innerText = "Camera failed ❌";
-    if (statusText) statusText.innerText = "Camera failed ❌";
+    if (status2) status2.innerText = "Camera failed: " + err.name;
+    if (statusText) statusText.innerText = "Camera failed: " + err.name;
 
-    // fallback automatically
+    // fallback automatically to front cam
     if (useBackCamera) {
       useBackCamera = false;
       startCamera();
