@@ -1,112 +1,192 @@
-let video = document.getElementById("video");
-let pointsDiv = document.getElementById("points");
-
-let usingBackCamera = true;
-
 //
-// ******** START CAMERA ********
+// ------------------- GLOBAL VALUES -------------------
 //
-async function startCamera(){
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video:{ facingMode: usingBackCamera ? "environment" : "user" },
-    audio:false
-  });
-  video.srcObject = stream;
-}
+let angulPx = 42;
+let heightPx = 600;
+let totalAngul = 0;
+
+const video = document.getElementById("video");
+const pointsDiv = document.getElementById("points");
+
+let camera = null;
+let latestPose = null;
+
 
 //
-// ******** SWITCH CAMERA ********
+// ------------------- NAVIGATION -------------------
 //
-function switchCamera(){
-  usingBackCamera = !usingBackCamera;
-  startCamera();
-}
-
-//
-// ********* LOAD MEDIAPIPE POSE ********
-//
-const pose = new Pose.Pose({
-  locateFile: (file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
-});
 function goToFinger(){
   screen0.classList.add("hidden");
   screen1.classList.remove("hidden");
 }
 
+function goToHeight(){
+  screen1.classList.add("hidden");
+  screen2.classList.remove("hidden");
+  startCamera();
+}
 
-pose.setOptions({
-  modelComplexity:1,
-  smoothLandmarks:true,
-  enableSegmentation:false,
-  minDetectionConfidence:0.6,
-  minTrackingConfidence:0.6
+function goToAR(){
+  screen2.classList.add("hidden");
+  screen3.classList.remove("hidden");
+  startCamera();
+}
+
+
+//
+// ------------------- ANGUL -------------------
+//
+function updateAngul(){
+  angulPx = angulSlider.value;
+  angulValue.innerText = angulPx;
+  angulBox.style.width = angulPx + "px";
+}
+
+
+//
+// ------------------- HEIGHT -------------------
+//
+function updateHeight(){
+  heightPx = heightSlider.value;
+  totalAngul = Math.round(heightPx / angulPx);
+  angulTotal.innerText = totalAngul;
+
+  heightBox.style.height = (heightPx / 4) + "px";
+}
+
+
+
+//
+// ------------------- START CAMERA -------------------
+//
+async function startCamera(){
+
+  if(camera){ return; } // camera already running
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" }},
+      audio:false
+    });
+
+    video.srcObject = stream;
+    statusText.innerText = "Camera Active ✔";
+
+  }catch(e){
+    statusText.innerText = "Camera blocked: " + e.message;
+  }
+}
+
+
+
+//
+// ------------------- MEDIAPIPE POSE -------------------
+//
+
+// create MediaPipe pose object
+const mpPose = new pose.Pose({
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
-pose.onResults(onPoseResults);
+mpPose.setOptions({
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  enableSegmentation: false,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+// callback: receives detected landmarks
+mpPose.onResults((results)=>{
+  latestPose = results.poseLandmarks;
+});
+
 
 //
-// ******** RUN AI ON CAMERA ********
+// camera-utils attaches video frames to MediaPipe
 //
-const camera = new Camera(video,{
-  onFrame: async()=> { await pose.send({image: video}); },
+const mpCamera = new Camera(video, {
+  onFrame: async () => {
+    await mpPose.send({image: video});
+  },
   width: 640,
   height: 480
 });
 
-camera.start();
+mpCamera.start();
+
+
 
 //
-// ******** HANDLE AI OUTPUT ********
+// ------------------- ANALYZE BODY -------------------
 //
-function onPoseResults(results){
+function analyze(){
 
   pointsDiv.innerHTML = "";
 
-  if(!results.poseLandmarks) return;
+  if(!latestPose){
+    alert("No body detected. Stand inside camera frame.");
+    return;
+  }
 
-  const L = results.poseLandmarks;
+  // key anatomical references
+  const nose = latestPose[0];
+  const shoulderMidY = (latestPose[11].y + latestPose[12].y)/2;
+  const hipMidY = (latestPose[23].y + latestPose[24].y)/2;
+  const kneeMidY = (latestPose[25].y + latestPose[26].y)/2;
+  const ankleMidY = (latestPose[27].y + latestPose[28].y)/2;
 
-  // key body reference points
-  const head = L[0].y;
-  const foot = Math.max(L[31].y, L[32].y);
-
-  // normalize body height
-  const bodyHeight = foot - head;
-
-  // Marma proportional rules
-  const marmas = [
-    { r:0.18 , name:"Ani Marma", text:"Shoulder joint marma" },
-    { r:0.30 , name:"Hridaya", text:"Heart region marma" },
-    { r:0.50 , name:"Sthanamula", text:"Base of chest marma" },
-    { r:0.70 , name:"Indravasti", text:"Calf vascular marma" },
-    { r:0.85 , name:"Janu", text:"Knee marma" }
+  // map marma positions in live proportion
+  const marmaMap = [
+    { y:nose.y, name:"Sringataka", text:"Vital head marma" },
+    { y:shoulderMidY, name:"Ani Marma", text:"Shoulder joint marma" },
+    { y:hipMidY, name:"Nabhi Marma", text:"Navel energy centre" },
+    { y:kneeMidY, name:"Janu Marma", text:"Knee marma" },
+    { y:ankleMidY, name:"Gulpha Marma", text:"Ankle marma" }
   ];
 
-  marmas.forEach(m=>{
+  marmaMap.forEach(m=>{
 
-    let y = (head + bodyHeight*m.r) * video.clientHeight;
-    let x = video.clientWidth/2;
+    const p = document.createElement("div");
+    p.className = "mar-point";
 
-    const dot = document.createElement("div");
-    dot.className="mar-point";
-    dot.style.top = y+"px";
-    dot.style.left = x+"px";
+    // convert relative Y → pixel
+    p.style.left = "50%";
+    p.style.top = (m.y * video.clientHeight) + "px";
 
-    dot.onclick = ()=>openPopup(m.name,m.text);
+    p.onclick = ()=>openPopup(m.name, m.text);
 
-    pointsDiv.appendChild(dot);
+    pointsDiv.appendChild(p);
+
   });
+
 }
 
+
+
 //
-// ******** POPUP ********
+// ------------------- POPUP -------------------
 //
 function openPopup(a,b){
   popup.classList.remove("hidden");
-  pTitle.innerText=a;
-  pText.innerText=b;
+  pTitle.innerText = a;
+  pText.innerText = b;
 }
 
 function closePopup(){
- popup.classList.add("hidden");
+  popup.classList.add("hidden");
 }
+
+
+
+//
+// ----------- EXPOSE TO HTML BUTTONS -----------
+//
+window.goToFinger = goToFinger;
+window.goToHeight = goToHeight;
+window.goToAR = goToAR;
+window.analyze = analyze;
+window.updateAngul = updateAngul;
+window.updateHeight = updateHeight;
+window.closePopup = closePopup;
