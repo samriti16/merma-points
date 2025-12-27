@@ -131,11 +131,14 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <div id="screen3" class="hidden">
 
   <p id="statusText">Point camera at full body</p>
-
   <div id="canvasArea">
-      <video id="video" autoplay playsinline muted></video>
-      <div id="points"></div>
-  </div>
+  <video id="video"></video>
+  <div id="points"></div>
+  <div id="heightBox"></div>
+</div>
+
+
+  
 
   <button onclick="analyze()">Analyze Body</button>
   <button onclick="switchCamera()">Switch Camera</button>
