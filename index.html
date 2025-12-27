@@ -88,6 +88,11 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <body>
 
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
+<div id="canvasArea">
+  <video id="video" autoplay playsinline muted></video>
+  <div id="heightBox"></div>
+  <div id="points"></div>
+</div>
 
 <!-- STEP 0 -->
 <div id="screen0">
@@ -115,12 +120,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
   <p id="status2">Camera loading…</p>
 
-  <div id="canvasArea">
-    <video id="video" autoplay playsinline muted></video>
-    <div id="heightBox"></div> <!-- ok to show height box here -->
-    <div id="points"></div>    <!-- also ok to keep for reuse -->
-</div>
-
+ 
 
   <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
