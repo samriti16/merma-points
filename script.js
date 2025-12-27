@@ -1,4 +1,4 @@
-const video2 = document.getElementById("video3");
+const video = document.getElementById("video");
 
 //
 // ----------- GLOBAL VALUES -----------
@@ -115,21 +115,14 @@ async function startCamera() {
 
     currentStream = stream;
 
-    // send to both step-2 and step-3 video players
-    video.srcObject  = stream;
-    video2.srcObject = stream;
-
-    video.onloadedmetadata = () => {
-      if (status2) status2.innerText = "Camera Active ✔";
-      if (statusText) statusText.innerText = "Camera Active ✔";
-    };
+    // 🔥 send video to the ONLY video element
+    video.srcObject = stream;
 
   } catch (err) {
-    if (status2) status2.innerText = "Camera blocked ❌ allow permissions";
-    if (statusText) statusText.innerText = "Camera blocked ❌";
     console.log(err);
   }
 }
+
 
 
 
