@@ -116,9 +116,11 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   <p id="status2">Camera loading…</p>
 
   <div id="canvasArea">
-      <video id="video" autoplay playsinline muted></video>
-      <div id="heightBox"></div>
-  </div>
+    <video id="video" autoplay playsinline muted></video>
+    <div id="heightBox"></div> <!-- ok to show height box here -->
+    <div id="points"></div>    <!-- also ok to keep for reuse -->
+</div>
+
 
   <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
@@ -126,25 +128,19 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
   <button onclick="goToAR()">Start AR Visualization</button>
 </div>
-
 <!-- STEP 3 -->
 <div id="screen3" class="hidden">
 
   <p id="statusText">Point camera at full body</p>
-  
-<div id="canvasArea">
-  <video id="video" autoplay playsinline muted></video>
-  <div id="points"></div>
-  <div id="heightBox"></div>
-</div>
 
-
-  
+  <!-- 🚨 DO NOT duplicate canvas/video -->
+  <!-- Reuses the SAME video and SAME overlay from step 2 -->
 
   <button onclick="analyze()">Analyze Body</button>
   <button onclick="switchCamera()">Switch Camera</button>
 
 </div>
+
 
 <!-- POPUP -->
 <div id="popup" class="hidden popup">
