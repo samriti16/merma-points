@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => { 
   console.log("DOM ready – starting camera");
 });
 
