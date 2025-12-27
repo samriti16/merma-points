@@ -1,19 +1,20 @@
 //
-// ------------------- GLOBAL VALUES -------------------
+// ---------------- GLOBAL VALUES ----------------
 //
 let angulPx = 42;
 let heightPx = 600;
 let totalAngul = 0;
 
 const video = document.getElementById("video");
-const pointsDiv = document.getElementById("points");
+const points = document.getElementById("points");
 
-let camera = null;
 let latestPose = null;
+let currentStream = null;
+let useBackCamera = true;
 
 
 //
-// ------------------- NAVIGATION -------------------
+// ---------------- NAVIGATION ----------------
 //
 function goToFinger(){
   screen0.classList.add("hidden");
@@ -29,12 +30,11 @@ function goToHeight(){
 function goToAR(){
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
-  startCamera();
 }
 
 
 //
-// ------------------- ANGUL -------------------
+// ---------------- ANGUL ----------------
 //
 function updateAngul(){
   angulPx = angulSlider.value;
@@ -44,7 +44,7 @@ function updateAngul(){
 
 
 //
-// ------------------- HEIGHT -------------------
+// ---------------- HEIGHT ----------------
 //
 function updateHeight(){
   heightPx = heightSlider.value;
@@ -53,22 +53,21 @@ function updateHeight(){
 
   heightBox.style.height = (heightPx / 4) + "px";
 }
-let useBackCamera = true;
-let currentStream = null;
 
+
+//
+// ---------------- SWITCH CAMERA ----------------
+//
 async function switchCamera(){
 
-  // stop old stream
   if(currentStream){
-    currentStream.getTracks().forEach(t => t.stop());
+    currentStream.getTracks().forEach(t=>t.stop());
   }
 
   useBackCamera = !useBackCamera;
 
   const stream = await navigator.mediaDevices.getUserMedia({
-    video:{
-      facingMode: useBackCamera ? "environment" : "user"
-    }
+    video:{ facingMode: useBackCamera ? "environment" : "user" }
   });
 
   currentStream = stream;
@@ -76,21 +75,20 @@ async function switchCamera(){
 }
 
 
-
 //
-// ------------------- START CAMERA -------------------
+// ---------------- START CAMERA ----------------
 //
 async function startCamera(){
 
-  if(camera){ return; } // camera already running
-
   try{
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" }},
+      video:{ facingMode:{ ideal:"environment"}},
       audio:false
     });
 
+    currentStream = stream;
     video.srcObject = stream;
+
     statusText.innerText = "Camera Active ✔";
 
   }catch(e){
@@ -99,48 +97,43 @@ async function startCamera(){
 }
 
 
-
 //
-// ------------------- MEDIAPIPE POSE -------------------
+// ---------------- MEDIAPIPE POSE ----------------
 //
 
-// create MediaPipe pose object
-const mpPose = new Pose({
-  locateFile: (file) =>
+// correct constructor (important!)
+const mpPose = new Pose.Pose({
+  locateFile:(file)=>
     `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
 mpPose.setOptions({
-  modelComplexity: 1,
-  smoothLandmarks: true,
-  enableSegmentation: false,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
+  modelComplexity:1,
+  smoothLandmarks:true,
+  enableSegmentation:false,
+  minDetectionConfidence:0.5,
+  minTrackingConfidence:0.5
 });
 
-// callback: receives detected landmarks
-mpPose.onResults((results)=>{
+mpPose.onResults(results=>{
   latestPose = results.poseLandmarks;
 });
 
 
-//
-// camera-utils attaches video frames to MediaPipe
-//
-const mpCamera = new Camera(video, {
-  onFrame: async () => {
-    await mpPose.send({image: video});
+// attach mediapipe camera util
+const mpCamera = new Camera(video,{
+  onFrame: async ()=>{
+    await mpPose.send({image:video});
   },
-  width: 640,
-  height: 480
+  width:640,
+  height:480
 });
 
 mpCamera.start();
 
 
-
 //
-// ------------------- ANALYZE BODY -------------------
+// ---------------- ANALYZE BODY (TEMP STATIC POINTS) ----------------
 //
 function analyze(){
 
@@ -172,9 +165,8 @@ function analyze(){
 }
 
 
-
 //
-// ------------------- POPUP -------------------
+// ---------------- POPUP ----------------
 //
 function openPopup(a,b){
   popup.classList.remove("hidden");
@@ -187,9 +179,8 @@ function closePopup(){
 }
 
 
-
 //
-// ----------- EXPOSE TO HTML BUTTONS -----------
+// ---------- EXPOSE FUNCTIONS TO HTML ----------
 //
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
@@ -198,3 +189,4 @@ window.analyze = analyze;
 window.updateAngul = updateAngul;
 window.updateHeight = updateHeight;
 window.closePopup = closePopup;
+window.switchCamera = switchCamera;
