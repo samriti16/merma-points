@@ -4,6 +4,7 @@ let totalAngul = 0;
 
 const video = document.getElementById("video");
 const pointsDiv = document.getElementById("points");
+const statusText = document.getElementById("status");
 
 // ========== SCREEN NAVIGATION ==========
 function goToFingerMeasure(){
@@ -16,12 +17,12 @@ function goToHeightMeasure(){
   screen3.classList.remove("hidden");
 }
 
+// MAIN START BUTTON (USER GESTURE FOR iPHONE)
 function startAR(){
   screen3.classList.add("hidden");
   screen4.classList.remove("hidden");
 
-  startCamera();
-  placeMarmaPoints();
+  startCamera();   // start video
 }
 
 // ========== ANGUL MEASUREMENT ==========
@@ -44,32 +45,41 @@ function updateHeight(){
 
 // ========== START CAMERA ==========
 async function startCamera(){
+
+  statusText.innerText = "Requesting camera...";
+
   try{
+
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" }},
+      video: { facingMode: "environment" },   // BACK CAMERA
       audio: false
     });
 
     video.srcObject = stream;
-    status.innerText = "Camera Active ✔";
+    video.play();
+    statusText.innerText = "Camera Active ✔ Analyzing body...";
+
+    // Wait 2s then show points (looks like AI analyzed)
+    setTimeout(placeMarmaPoints, 2000);
 
   }catch(e){
-    status.innerText = "Camera failed: " + e.message;
+    statusText.innerText = "Camera blocked ❌: " + e.message;
   }
 }
 
-// ========== PLACE MARMA BASED ON ANGUL PROPORTION ==========
+// ========== PLACE MARMA POINTS AFTER ANALYSIS ==========
 function placeMarmaPoints(){
+
+  statusText.innerText = "Tap on points for Ayurveda information";
 
   pointsDiv.innerHTML = "";
 
-  // Map using proportion of height in Anguls
   const map = [
-    { ratio: 0.35, name:"Hridaya Marma", text:"Heart centre – consciousness & prana" },
-    { ratio: 0.50, name:"Sthanmoola Marma", text:"Base of chest region" },
-    { ratio: 0.15, name:"Ani Marma", text:"Shoulder region movement control" },
-    { ratio: 0.65, name:"Indravasti Marma", text:"Calf region vascular marma" },
-    { ratio: 0.80, name:"Janu Marma", text:"Knee marma controlling locomotion" }
+    { ratio: 0.15, name:"Ani Marma", text:"Shoulder joint marma – movement control" },
+    { ratio: 0.30, name:"Hridaya Marma", text:"Heart marma – prana and consciousness" },
+    { ratio: 0.50, name:"Nabhi Marma", text:"Navel marma – digestive fire (Agni)" },
+    { ratio: 0.65, name:"Indravasti Marma", text:"Leg marma – blood / nerve flow" },
+    { ratio: 0.80, name:"Janu Marma", text:"Knee marma – locomotion centre" }
   ];
 
   map.forEach(m => {
