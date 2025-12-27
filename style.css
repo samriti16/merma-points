@@ -94,4 +94,12 @@ body{
 .mar-point{
   pointer-events:auto;   /* BUT dots will still receive clicks */
 }
+#points{
+  pointer-events:none;      /* container ignores clicks */
+}
+
+.marma-point{
+  pointer-events:auto;      /* dots are clickable */
+  z-index:999;              /* above video */
+}
 
