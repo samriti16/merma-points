@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html> 
+<html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AR Marma Visualization</title>
 
 <style>
 body { background:black; color:white; text-align:center; font-family:Arial }
-
 .hidden { display:none }
 
 /* finger box */
@@ -17,14 +16,13 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   margin:auto;
 }
 
-/* MAIN CANVAS AREA */
+/* camera+overlay container */
 #canvasArea{
   position:relative;
   width:90vw;
   margin:auto;
 }
 
-/* single video used in ALL steps */
 #video{
   width:100%;
   border:2px solid cyan;
@@ -32,7 +30,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   display:block;
 }
 
-/* yellow height measurement box */
+/* height box */
 #heightBox{
   position:absolute;
   border:2px dashed yellow;
@@ -44,16 +42,12 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   pointer-events:none;
 }
 
-/* marma overlay points */
+/* marma points */
 #points{
   position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  inset:0;
 }
 
-/* clickable marma dots */
 .mar-point{
   width:14px;
   height:14px;
@@ -62,7 +56,6 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   border:2px solid white;
   position:absolute;
   transform:translate(-50%,-50%);
-  cursor:pointer;
 }
 
 /* popup */
@@ -84,25 +77,27 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 
 </head>
-
-<body> 
+<body>
 
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
+
+<!-- single reusable camera area -->
 <div id="canvasArea" class="hidden">
   <video id="video" autoplay playsinline muted></video>
-  <div id="heightBox"></div>
-  <div id="points"></div> 
+  <div id="heightBox" class="hidden"></div>
+  <div id="points" class="hidden"></div>
 </div>
+
 <!-- STEP 0 -->
 <div id="screen0">
-  <p>By continuing you consent to camera access for AR body landmark visualization.</p>
+  <p>By continuing you consent to camera access.</p>
   <button onclick="goToFinger()">Start</button>
 </div>
 
 <!-- STEP 1 -->
 <div id="screen1" class="hidden">
   <h3>Step 1 — Measure Angul</h3>
-  <p>Place finger and match rectangle width</p>
+  <p>Place finger & match width</p>
 
   <div class="box" id="angulBox"></div>
 
@@ -116,14 +111,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <!-- STEP 2 -->
 <div id="screen2" class="hidden">
   <h3>Step 2 — Measure Height</h3>
-
-  <p id="status2">Camera Active ✔</p>
-
-  <div id="canvasArea">
-      <video id="video" autoplay playsinline muted></video>
-      <div id="heightBox"></div>
-      <div id="points"></div>
-  </div>
+  <p id="status2">Camera loading…</p>
 
   <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
@@ -134,17 +122,10 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
 <!-- STEP 3 -->
 <div id="screen3" class="hidden">
-
   <p id="statusText">Point camera at full body</p>
-
-  <!-- 🚨 DO NOT duplicate canvas/video -->
-  <!-- Reuses the SAME video and SAME overlay from step 2 -->
-
   <button onclick="analyze()">Analyze Body</button>
   <button onclick="switchCamera()">Switch Camera</button>
-
 </div>
-
 
 <!-- POPUP -->
 <div id="popup" class="hidden popup">
@@ -153,8 +134,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
   <button onclick="closePopup()">Close</button>
 </div>
 
-<script src="script.js?v=3"></script>
-
+<script src="script.js?v=3" defer></script>
 
 </body>
 </html>
