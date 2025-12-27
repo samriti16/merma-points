@@ -23,13 +23,14 @@ body{
   border-radius:12px;
 }
 
-/* MARMA POINT OVERLAY */
+/* DOT OVERLAY */
 #points{
   position:absolute;
   top:0;
   left:0;
   width:100%;
   height:100%;
+  pointer-events:auto;
 }
 
 /* RED DOTS */
@@ -44,7 +45,7 @@ body{
   cursor:pointer;
 }
 
-/* FINGER MEASURE BOX */
+/* FINGER MEASUREMENT BOX */
 .box{
   border:2px dashed cyan;
   width:42px;
@@ -52,14 +53,15 @@ body{
   margin:auto;
 }
 
-/* HEIGHT MEASURE BOX – CENTERED OVER VIDEO */
+/* HEIGHT MEASUREMENT BOX */
 #heightBox{
   position:absolute;
-  top:10%;
+  top:8%;
   left:50%;
   transform:translateX(-50%);
   border:2px dashed yellow;
   width:120px;
+  height:200px;
   pointer-events:none;
 }
 
@@ -76,36 +78,3 @@ body{
   border:1px solid white;
   width:85%;
 }
-#canvasArea{
-  position:relative;
-  display:inline-block;
-}
-
-#video{
-  width:90vw;
-  max-width:480px;
-  border:2px solid cyan;
-  border-radius:12px;
-}
-
-/* dots overlay */
-#points{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-}
-
-/* height box */
-#heightBox{
-  position:absolute;
-  top:10%;
-  left:50%;
-  transform:translateX(-50%);
-  border:2px dashed yellow;
-  width:120px;
-  height:200px;
-  pointer-events:none;
-}
-
