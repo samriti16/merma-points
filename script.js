@@ -1,6 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => { 
-  console.log("DOM ready – starting camera");
-});
+console.log("DOM Ready");
 
 // ----------- GLOBAL VALUES -----------
 let angulPx = 42;
@@ -17,45 +15,40 @@ const statusText = document.getElementById("statusText");
 let currentStream = null;
 let useBackCamera = true;
 
-//
-// ---------- START CAMERA ----------
+let latestPose = null;   // <-- real pose stored here
+
+//----------------------------------------------------
+// 🎥 START CAMERA (used for BOTH Step 2 & Step 3)
+//----------------------------------------------------
 async function startCamera() {
 
   try {
 
-    // stop old stream if exists
-    if (currentStream) {
+    if (currentStream)
       currentStream.getTracks().forEach(t => t.stop());
-    }
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        facingMode: useBackCamera ? { ideal: "environment" } : "user"
+        facingMode: useBackCamera ? "environment" : "user"
       },
       audio: false
     });
 
     currentStream = stream;
-
     video.srcObject = stream;
 
-    video.onloadeddata = () => {
-      video.play();
-      console.log("🎥 video playing");
-      if (status2) status2.innerText = "Camera Active ✔";
-      if (statusText) statusText.innerText = "Camera Active ✔";
-    };
+    await video.play();
+
+    if (status2) status2.innerText = "Camera Active ✔";
+    if (statusText) statusText.innerText = "Camera Active ✔";
 
   } catch (err) {
 
-    console.error("❌ Camera error:", err);
+    console.log("Camera error", err);
 
-    if (status2) status2.innerText = "Camera failed: " + err.name;
-    if (statusText) statusText.innerText = "Camera failed: " + err.name;
+    if (status2) status2.innerText = "Camera failed ❌";
+    if (statusText) statusText.innerText = "Camera failed ❌";
 
-    // fallback automatically to front cam
     if (useBackCamera) {
       useBackCamera = false;
       startCamera();
@@ -63,40 +56,46 @@ async function startCamera() {
   }
 }
 
-//
-// ---------- SWITCH CAMERA ----------
-function switchCamera() {
+//----------------------------------------------------
+// 🔁 SWITCH CAMERA
+//----------------------------------------------------
+function switchCamera(){
   useBackCamera = !useBackCamera;
   startCamera();
 }
 
-//
-// ---------- ANGUL ----------
-function updateAngul() {
+//----------------------------------------------------
+// 🧮 ANGUL
+//----------------------------------------------------
+function updateAngul(){
   angulPx = angulSlider.value;
   angulValue.innerText = angulPx;
   angulBox.style.width = angulPx + "px";
 }
 
-//
-// ---------- HEIGHT ----------
-function updateHeight() {
+//----------------------------------------------------
+// 📏 HEIGHT
+//----------------------------------------------------
+function updateHeight(){
+
   heightPx = heightSlider.value;
+
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
+
   heightBox.style.height = (heightPx / 4) + "px";
 }
 
-//
-// ---------- NAVIGATION ----------
+//----------------------------------------------------
+// 🧭 NAVIGATION
+//----------------------------------------------------
 function goToFinger(){
   screen0.classList.add("hidden");
   screen1.classList.remove("hidden");
 
   heightBox.classList.add("hidden");
-  points.classList.add("hidden");
+  pointsDiv.classList.add("hidden");
 }
-
 
 function goToHeight(){
   screen1.classList.add("hidden");
@@ -104,63 +103,138 @@ function goToHeight(){
 
   startCamera();
 
-  heightBox.classList.remove("hidden"); // show yellow box
-  points.classList.add("hidden");       // hide red points
+  heightBox.classList.remove("hidden");
+  pointsDiv.classList.add("hidden");
 }
 
-
 function goToAR(){
+
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
 
-  heightBox.classList.add("hidden");    // hide yellow box
-  points.classList.remove("hidden");    // show marma points
+  heightBox.classList.add("hidden");
+  pointsDiv.classList.remove("hidden");
+
+  startCamera();            // camera stays ON
+  startPoseTracking();      // <-- enable Mediapipe
 }
-//
-// ---------- STATIC MARMA POINTS ----------
-function analyze() {
+
+//----------------------------------------------------
+// 🧠 MEDIAPIPE POSE
+//----------------------------------------------------
+const pose = new Pose({
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+});
+
+pose.setOptions({
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+pose.onResults((results)=>{
+  latestPose = results.poseLandmarks;
+  drawDynamicMarmaPoints();
+});
+
+//----------------------------------------------------
+// 🚀 START LIVE POSE TRACKING
+//----------------------------------------------------
+function startPoseTracking(){
+
+  const cam = new Camera(video, {
+    onFrame: async () => {
+      await pose.send({image: video});
+    },
+    width: 640,
+    height: 480
+  });
+
+  cam.start();
+}
+
+//----------------------------------------------------
+// 🔴 PLACE MARMA POINTS USING BODY LANDMARKS
+//----------------------------------------------------
+function drawDynamicMarmaPoints(){
 
   pointsDiv.innerHTML = "";
 
-  const rect = video.getBoundingClientRect();
-  const vh = rect.height;
+  if(!latestPose){
+    return;
+  }
+
+  function mp(id){ return latestPose[id]; }
 
   const map = [
-    { y: 0.18, name: "Ani Marma", txt: "Shoulder joint marma" },
-    { y: 0.30, name: "Hridaya Marma", txt: "Heart centre marma" },
-    { y: 0.50, name: "Sthanamoola", txt: "Base of chest" },
-    { y: 0.70, name: "Indravasti", txt: "Calf marma" },
-    { y: 0.85, name: "Janu", txt: "Knee marma" }
+
+    // head between eyes
+    {id: 10, name:"Sira Matrika", txt:"Head marma"},
+
+    // chest centre between shoulders
+    {id: 12, name:"Hridaya", txt:"Heart marma"},
+
+    // navel close to midpoint hip line
+    {id: 24, name:"Nabhi", txt:"Navel marma"},
+
+    // knee left/right
+    {id: 25, name:"Janu", txt:"Knee marma"},
+    {id: 26, name:"Janu", txt:"Knee marma"},
+
+    // ankle
+    {id: 27, name:"Gulpha", txt:"Ankle marma"},
+    {id: 28, name:"Gulpha", txt:"Ankle marma"}
+
   ];
+
+  const vw = video.clientWidth;
+  const vh = video.clientHeight;
 
   map.forEach(m => {
 
+    const lm = mp(m.id);
+    if(!lm) return;
+
+    const x = lm.x * vw;
+    const y = lm.y * vh;
+
     const d = document.createElement("div");
     d.className = "mar-point";
+    d.style.left = x + "px";
+    d.style.top = y + "px";
 
-    d.style.top = (vh * m.y) + "px";
-    d.style.left = "50%";
-
-    d.onclick = () => openPopup(m.name, m.txt);
+    d.onclick = ()=>openPopup(m.name, m.txt);
 
     pointsDiv.appendChild(d);
   });
+
 }
 
-//
-// ---------- POPUP ----------
-function openPopup(a, b) {
+//----------------------------------------------------
+// 🧍 Static fallback button (optional)
+//----------------------------------------------------
+function analyze(){
+  drawDynamicMarmaPoints();
+}
+
+//----------------------------------------------------
+// 🔳 POPUP
+//----------------------------------------------------
+function openPopup(a,b){
   popup.classList.remove("hidden");
   pTitle.innerText = a;
   pText.innerText = b;
 }
 
-function closePopup() {
+function closePopup(){
   popup.classList.add("hidden");
 }
 
-//
-// ---------- EXPOSE ----------
+//----------------------------------------------------
+// 🌍 BIND BUTTONS
+//----------------------------------------------------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
 window.goToAR = goToAR;
