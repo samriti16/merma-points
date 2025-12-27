@@ -1,108 +1,98 @@
+let angulPx = 60;
+let heightPx = 600;
+let totalAngul = 0;
+
 const video = document.getElementById("video");
-const startBtn = document.getElementById("startBtn");
-const analyzingBox = document.getElementById("analyzing");
-const pointsContainer = document.getElementById("points");
-const popup = document.getElementById("popup");
-const popupTitle = document.getElementById("popup-title");
-const popupText = document.getElementById("popup-text");
+const pointsDiv = document.getElementById("points");
 
-let stream;
+// ========== SCREEN NAVIGATION ==========
+function goToFingerMeasure(){
+  screen1.classList.add("hidden");
+  screen2.classList.remove("hidden");
+}
 
-// ==============================
-//  START CAMERA (BACK CAMERA)
-// ==============================
-async function startCamera() {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { exact: "environment" }   // back camera
-      },
+function goToHeightMeasure(){
+  screen2.classList.add("hidden");
+  screen3.classList.remove("hidden");
+}
+
+function startAR(){
+  screen3.classList.add("hidden");
+  screen4.classList.remove("hidden");
+
+  startCamera();
+  placeMarmaPoints();
+}
+
+// ========== ANGUL MEASUREMENT ==========
+function updateAngul(){
+  angulPx = parseInt(document.getElementById("angulSlider").value);
+  document.getElementById("angulValue").innerText = angulPx;
+  document.getElementById("angulBox").style.width = angulPx + "px";
+}
+
+// ========== HEIGHT TO ANGUL ==========
+function updateHeight(){
+  heightPx = parseInt(document.getElementById("heightSlider").value);
+
+  document.getElementById("heightPx").innerText = heightPx;
+
+  totalAngul = Math.round(heightPx / angulPx);
+
+  document.getElementById("totalAngul").innerText = totalAngul;
+}
+
+// ========== START CAMERA ==========
+async function startCamera(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" }},
       audio: false
     });
 
     video.srcObject = stream;
+    status.innerText = "Camera Active ✔";
 
-  } catch (err) {
-    console.log("Back camera failed, switching to front camera...");
-    // fallback: front camera
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: false
-    });
-
-    video.srcObject = stream;
+  }catch(e){
+    status.innerText = "Camera failed: " + e.message;
   }
 }
 
-// ==============================
-//   START ANALYSIS BUTTON CLICK
-// ==============================
-startBtn.addEventListener("click", async () => {
+// ========== PLACE MARMA BASED ON ANGUL PROPORTION ==========
+function placeMarmaPoints(){
 
-  // hide points until analysis finishes
-  pointsContainer.style.display = "none";
+  pointsDiv.innerHTML = "";
 
-  // show analyzing loader
-  analyzingBox.classList.remove("hidden");
-
-  // start camera if not already
-  if (!stream) {
-    await startCamera();
-  }
-
-  // simulate AI analyzing delay (replace later with pose detection)
-  setTimeout(() => {
-    analyzingBox.classList.add("hidden");
-
-    // show marma points only now
-    showMarmaPoints();
-
-  }, 2000);
-});
-
-// ==============================
-//   DISPLAY STATIC DEMO POINTS
-// ==============================
-function showMarmaPoints() {
-
-  pointsContainer.innerHTML = ""; // clear old
-
-  pointsContainer.style.display = "block";
-
-  // example demo marma set
-  const marmaData = [
-    { x: 50, y: 15, name: "Sringataka", text: "Head + sensory control marma" },
-    { x: 50, y: 30, name: "Ani Marma", text: "Shoulder joint – movement control" },
-    { x: 50, y: 45, name: "Hridaya Marma", text: "Heart energy & consciousness" },
-    { x: 30, y: 60, name: "Kukundara", text: "Hip marma – balance & walking" },
-    { x: 70, y: 60, name: "Kukundara", text: "Hip marma – balance & walking" },
-    { x: 40, y: 80, name: "Janu Marma", text: "Knee marma – leg strength" },
-    { x: 60, y: 80, name: "Janu Marma", text: "Knee marma – leg strength" }
+  // Map using proportion of height in Anguls
+  const map = [
+    { ratio: 0.35, name:"Hridaya Marma", text:"Heart centre – consciousness & prana" },
+    { ratio: 0.50, name:"Sthanmoola Marma", text:"Base of chest region" },
+    { ratio: 0.15, name:"Ani Marma", text:"Shoulder region movement control" },
+    { ratio: 0.65, name:"Indravasti Marma", text:"Calf region vascular marma" },
+    { ratio: 0.80, name:"Janu Marma", text:"Knee marma controlling locomotion" }
   ];
 
-  marmaData.forEach(m => {
-    const point = document.createElement("div");
-    point.className = "marma-point";
-    point.style.left = m.x + "%";
-    point.style.top = m.y + "%";
+  map.forEach(m => {
 
-    point.onclick = () => openPopup(m.name, m.text);
+    const pt = document.createElement("div");
+    pt.className = "marma-point";
 
-    pointsContainer.appendChild(point);
+    pt.style.left = "50%";
+    pt.style.top = (m.ratio * 100) + "%";
+
+    pt.onclick = ()=>openPopup(m.name, m.text);
+
+    pointsDiv.appendChild(pt);
   });
 }
 
-// ==============================
-//   POPUP FUNCTIONS
-// ==============================
-function openPopup(title, text) {
-  popupTitle.innerText = title;
-  popupText.innerText = text;
+// ========== POPUP ==========
+function openPopup(a,b){
+  popupTitle.innerText = a;
+  popupText.innerText = b;
   popup.classList.remove("hidden");
 }
 
-function closePopup() {
+function closePopup(){
   popup.classList.add("hidden");
 }
-
-window.closePopup = closePopup;
