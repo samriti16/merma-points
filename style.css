@@ -78,3 +78,10 @@ body{
   border:1px solid white;
   width:85%;
 }
+#video{
+  width: 90vw;
+  max-width: 480px;
+  min-height: 240px;
+  background:black;
+}
+
