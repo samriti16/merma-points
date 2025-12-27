@@ -1,4 +1,4 @@
-let angulPx = 60;
+let angulPx = 42;
 let heightPx = 600;
 let totalAngul = 0;
 
@@ -16,6 +16,7 @@ function goToFinger(){
 function goToHeight(){
  screen1.classList.add("hidden");
  screen2.classList.remove("hidden");
+ startCamera();   // turn camera ON here
 }
 
 function goToAR(){
