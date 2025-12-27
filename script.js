@@ -192,11 +192,14 @@ function drawDynamicMarmaPoints(){
     const y = lm.y * vh;
 
     const d = document.createElement("div");
-    d.className = "marma-point";
+    d.className = "mar-point";
     d.style.left = x + "px";
     d.style.top = y + "px";
-    d.onclick = ()=>openPopup(m.name, m.txt);
+    d.addEventListener("click", () => openPopup(m.name, m.txt));
+    d.addEventListener("touchstart", () => openPopup(m.name, m.txt), {passive:true});
     pointsDiv.appendChild(d);
+
+   
   });
 }
 
@@ -206,7 +209,8 @@ function analyze(){
 }
 
 //----------------------------------------------------
-function openPopup(a,b){
+function openPopup(a, b){
+  console.log("POPUP OPEN", a);   // <-- debug
   popup.classList.remove("hidden");
   pTitle.innerText = a;
   pText.innerText = b;
@@ -215,6 +219,7 @@ function openPopup(a,b){
 function closePopup(){
   popup.classList.add("hidden");
 }
+
 d.onclick = ()=> {
   console.log("dot clicked");
   openPopup(m.name, m.txt);
