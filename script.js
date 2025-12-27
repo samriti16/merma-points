@@ -123,7 +123,7 @@ function goToAR(){
 //----------------------------------------------------
 const pose = new Pose({
   locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`
 });
 
 pose.setOptions({
@@ -137,6 +137,12 @@ pose.onResults((results)=>{
   latestPose = results.poseLandmarks;
   drawDynamicMarmaPoints();
 });
+pose.onResults((results)=>{
+  console.log("POSE FOUND ✔");
+  latestPose = results.poseLandmarks;
+  drawDynamicMarmaPoints();
+});
+
 
 //----------------------------------------------------
 // 🚀 START LIVE POSE TRACKING
