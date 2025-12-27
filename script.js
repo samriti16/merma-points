@@ -84,7 +84,7 @@ async function startCamera(){
 //
 
 // create MediaPipe pose object
-const mpPose = new pose.Pose({
+const mpPose = new Pose({
   locateFile: (file) =>
     `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
