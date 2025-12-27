@@ -2,73 +2,114 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AR Based Marma Visualization</title>
+<title>AR Marma Visualization</title>
 
-<link rel="stylesheet" href="style.css">
+<style>
+body { background:black; color:white; text-align:center; font-family:Arial }
 
-<!-- MediaPipe Pose -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+.hidden { display:none }
 
+.box {
+  border:2px dashed cyan;
+  width:60%;
+  height:200px;
+  margin:auto;
+}
+
+#heightBox{
+  border:2px dashed yellow;
+  width:120px;
+  height:200px;
+  margin:auto;
+}
+
+.mar-point{
+ width:14px;
+ height:14px;
+ background:red;
+ border-radius:50%;
+ border:2px solid white;
+ position:absolute;
+}
+#video{
+ width:90%;
+ border:2px solid cyan;
+ border-radius:12px;
+}
+#canvasArea{
+ position:relative;
+ display:inline-block;
+}
+.popup{
+ background:#111;
+ padding:15px;
+ border-radius:12px;
+ border:1px solid white;
+ position:fixed;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ width:85%;
+}
+</style>
 </head>
+
 <body>
 
-<!-- ============= SCREEN 1 ============= -->
-<div id="screen1">
-  <h1>AR Based Marma Visualization<br>(Angul Parman Prototype)</h1>
-  <button onclick="goToFingerMeasure()">Start</button>
+<h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
+
+<!-- STEP 0 -->
+<div id="screen0">
+<p>By continuing you consent to camera access for AR body landmark visualization.</p>
+<button onclick="goToFinger()">Start</button>
 </div>
 
-<!-- ============= SCREEN 2 ============= -->
+<!-- STEP 1 Angul -->
+<div id="screen1" class="hidden">
+<h3>Step 1 — Measure Angul</h3>
+<p>Place finger & match rectangle width</p>
+
+<div class="box" id="angulBox"></div>
+
+<input type="range" id="angulSlider" min="20" max="120" value="60" oninput="updateAngul()">
+
+<p>1 Angul = <span id="angulValue">60</span> pixels</p>
+
+<button onclick="goToHeight()">Next → Height Measurement</button>
+</div>
+
+<!-- STEP 2 Height -->
 <div id="screen2" class="hidden">
-  <h2>Step 1 — Measure Angul</h2>
+<h3>Step 2 — Measure Height</h3>
 
-  <p>Place finger & match rectangle width</p>
+<div id="heightBox"></div>
 
-  <div id="angulBox" class="measure-rect"></div>
+<input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
-  <input type="range" id="angulSlider" min="20" max="120" value="60" oninput="updateAngul()">
+<p>Total height in Angul = <span id="angulTotal">0</span></p>
 
-  <p>1 Angul = <span id="angulValue">60</span> pixels</p>
-
-  <button onclick="goToHeightMeasure()">Next → Height Measurement</button>
+<button onclick="goToAR()">Start AR Visualization</button>
 </div>
 
-<!-- ============= SCREEN 3 ============= -->
+<!-- STEP 3 AR -->
 <div id="screen3" class="hidden">
-  <h2>Step 2 — Measure Height in Pixels</h2>
 
-  <video id="video" autoplay playsinline></video>
+<p id="statusText">Initializing camera…</p>
 
-  <div id="heightBox" class="measure-rect"></div>
-
-  <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
-
-  <p>Body height: <span id="heightPx">600</span> px</p>
-  <p>Total Angul = <span id="totalAngul">10</span></p>
-
-  <button onclick="startAR()">Start AR Visualization</button>
+<div id="canvasArea">
+<video id="video" autoplay playsinline muted></video>
+<div id="points"></div>
 </div>
 
-<!-- ============= SCREEN 4 ============= -->
-<div id="screen4" class="hidden">
-
-  <h2 id="status">Analyzing… Please hold still</h2>
-
-  <div id="cameraWrapper">
-    <video id="arVideo" autoplay playsinline></video>
-    <canvas id="overlay"></canvas>
-  </div>
-
-  <button onclick="switchCamera()">Switch Camera</button>
+<button onclick="analyze()">Analyze Body</button>
 
 </div>
 
 <!-- POPUP -->
 <div id="popup" class="hidden popup">
-  <h3 id="popupTitle"></h3>
-  <p id="popupText"></p>
-  <button onclick="closePopup()">Close</button>
+<h3 id="pTitle"></h3>
+<p id="pText"></p>
+<button onclick="closePopup()">Close</button>
 </div>
 
 <script src="script.js"></script>
