@@ -1,112 +1,108 @@
 const video = document.getElementById("video");
-const statusText = document.getElementById("status");
-const loader = document.getElementById("loader");
-const pointsBox = document.getElementById("points");
+const startBtn = document.getElementById("startBtn");
+const analyzingBox = document.getElementById("analyzing");
+const pointsContainer = document.getElementById("points");
+const popup = document.getElementById("popup");
+const popupTitle = document.getElementById("popup-title");
+const popupText = document.getElementById("popup-text");
 
-async function startAnalysis() {
+let stream;
 
-  statusText.innerText = "Requesting camera...";
-  loader.style.display = "block";
-
-  // safety fallback
-  const getUserMedia = (
-    navigator.mediaDevices?.getUserMedia ||
-    navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia
-  );
-
-  if (!getUserMedia) {
-    statusText.innerText = "Camera not supported or insecure connection. Open using localhost or HTTPS.";
-    loader.style.display = "none";
-    return;
-  }
-  let useBackCamera = true;
-
-document.getElementById("switchCam").onclick = () => {
-  useBackCamera = !useBackCamera;
-  startCamera();
-};
-
+// ==============================
+//  START CAMERA (BACK CAMERA)
+// ==============================
 async function startCamera() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: useBackCamera ? "environment" : "user"
+        facingMode: { exact: "environment" }   // back camera
       },
       audio: false
     });
 
     video.srcObject = stream;
+
   } catch (err) {
-    console.log(err);
-  }
-}
-
-
-  try {
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
+    console.log("Back camera failed, switching to front camera...");
+    // fallback: front camera
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
       audio: false
     });
 
     video.srcObject = stream;
-
-    statusText.innerText = "Camera Active ✔ Align inside frame";
-    loader.style.display = "none";
-
-    setTimeout(showMarmaPoints, 1500);
-
-  } catch (err) {
-
-    loader.style.display = "none";
-    statusText.innerText = "Camera blocked: " + err.message;
   }
 }
 
+// ==============================
+//   START ANALYSIS BUTTON CLICK
+// ==============================
+startBtn.addEventListener("click", async () => {
 
-function showMarmaPoints(){
+  // hide points until analysis finishes
+  pointsContainer.style.display = "none";
 
-  statusText.innerText = "Tap on points to read Ayurveda description";
+  // show analyzing loader
+  analyzingBox.classList.remove("hidden");
 
-  pointsBox.classList.remove("hidden");
+  // start camera if not already
+  if (!stream) {
+    await startCamera();
+  }
 
-  const marmaPoints = [
-    {x:48, y:18, name:"Stanamula Marma", desc:"Located in chest region – vital for Prana Vayu"},
-    {x:52, y:18, name:"Hridaya Marma", desc:"Heart centre – governs consciousness & circulation"},
+  // simulate AI analyzing delay (replace later with pose detection)
+  setTimeout(() => {
+    analyzingBox.classList.add("hidden");
 
-    {x:48, y:35, name:"Indravasti Marma", desc:"Abdominal marma controlling digestive fire"},
-    {x:52, y:35, name:"Indravasti Marma", desc:"Abdominal marma controlling digestive fire"},
+    // show marma points only now
+    showMarmaPoints();
 
-    {x:35, y:25, name:"Ani Marma", desc:"Shoulder joint marma – movement control"},
-    {x:65, y:25, name:"Ani Marma", desc:"Shoulder joint marma – movement control"},
+  }, 2000);
+});
 
-    {x:35, y:55, name:"Kurpara Marma", desc:"Elbow marma – nerve pathway point"},
-    {x:65, y:55, name:"Kurpara Marma", desc:"Elbow marma – nerve pathway point"},
+// ==============================
+//   DISPLAY STATIC DEMO POINTS
+// ==============================
+function showMarmaPoints() {
 
-    {x:40, y:75, name:"Janu Marma", desc:"Knee marma connected to locomotion"},
-    {x:60, y:75, name:"Janu Marma", desc:"Knee marma connected to locomotion"},
+  pointsContainer.innerHTML = ""; // clear old
+
+  pointsContainer.style.display = "block";
+
+  // example demo marma set
+  const marmaData = [
+    { x: 50, y: 15, name: "Sringataka", text: "Head + sensory control marma" },
+    { x: 50, y: 30, name: "Ani Marma", text: "Shoulder joint – movement control" },
+    { x: 50, y: 45, name: "Hridaya Marma", text: "Heart energy & consciousness" },
+    { x: 30, y: 60, name: "Kukundara", text: "Hip marma – balance & walking" },
+    { x: 70, y: 60, name: "Kukundara", text: "Hip marma – balance & walking" },
+    { x: 40, y: 80, name: "Janu Marma", text: "Knee marma – leg strength" },
+    { x: 60, y: 80, name: "Janu Marma", text: "Knee marma – leg strength" }
   ];
 
-  marmaPoints.forEach(p=>{
-    const d=document.createElement("div");
-    d.className="dot";
-    d.style.left=p.x+"%";
-    d.style.top=p.y+"%";
+  marmaData.forEach(m => {
+    const point = document.createElement("div");
+    point.className = "marma-point";
+    point.style.left = m.x + "%";
+    point.style.top = m.y + "%";
 
-    d.onclick=()=>openPopup(p.name,p.desc);
+    point.onclick = () => openPopup(m.name, m.text);
 
-    pointsBox.appendChild(d);
+    pointsContainer.appendChild(point);
   });
 }
 
-function openPopup(t,txt){
-  document.getElementById("popup-title").innerText=t;
-  document.getElementById("popup-text").innerText=txt;
-  document.getElementById("popup").classList.remove("hidden");
+// ==============================
+//   POPUP FUNCTIONS
+// ==============================
+function openPopup(title, text) {
+  popupTitle.innerText = title;
+  popupText.innerText = text;
+  popup.classList.remove("hidden");
 }
 
-function closePopup(){
-  document.getElementById("popup").classList.add("hidden");
+function closePopup() {
+  popup.classList.add("hidden");
 }
+
+window.closePopup = closePopup;
