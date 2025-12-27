@@ -21,7 +21,9 @@ let latestPose = null;
 // 🎥 START CAMERA
 //----------------------------------------------------
 async function startCamera() {
+
   try {
+
     if (currentStream)
       currentStream.getTracks().forEach(t => t.stop());
 
@@ -74,6 +76,7 @@ function updateAngul(){
 //----------------------------------------------------
 function updateHeight(){
   heightPx = heightSlider.value;
+
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
 
@@ -84,6 +87,7 @@ function updateHeight(){
 // 🧭 NAVIGATION
 //----------------------------------------------------
 function goToFinger(){
+
   screen0.classList.add("hidden");
   screen1.classList.remove("hidden");
 
@@ -92,6 +96,7 @@ function goToFinger(){
 }
 
 function goToHeight(){
+
   screen1.classList.add("hidden");
   screen2.classList.remove("hidden");
 
@@ -133,7 +138,6 @@ pose.setOptions({
 });
 
 pose.onResults((results)=>{
-  console.log("POSE FOUND ✔");
   latestPose = results.poseLandmarks;
   drawDynamicMarmaPoints();
 });
@@ -186,12 +190,12 @@ function drawDynamicMarmaPoints(){
     const y = lm.y * vh;
 
     const d = document.createElement("div");
-    d.className = "marma-point";   // ✅ FIXED name
+    d.className = "marma-point";
 
     d.style.left = x + "px";
     d.style.top = y + "px";
 
-    // works on mobile + desktop
+    // mobile + desktop friendly
     d.addEventListener("pointerdown", () => openPopup(m.name, m.txt));
 
     pointsDiv.appendChild(d);
@@ -205,7 +209,6 @@ function analyze(){
 
 //----------------------------------------------------
 function openPopup(a, b){
-  console.log("POPUP OPEN", a);
   popup.classList.remove("hidden");
   pTitle.innerText = a;
   pText.innerText = b;
