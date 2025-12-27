@@ -126,9 +126,10 @@ function goToAR(){
 // 🧠 MEDIAPIPE POSE
 //----------------------------------------------------
 const pose = new Pose({
-  locateFile: (file) =>
+  locateFile: (file) => 
     `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.3/${file}`
 });
+
 
 pose.setOptions({
   modelComplexity: 1,
