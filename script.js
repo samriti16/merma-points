@@ -21,6 +21,28 @@ async function startAnalysis() {
     loader.style.display = "none";
     return;
   }
+  let useBackCamera = true;
+
+document.getElementById("switchCam").onclick = () => {
+  useBackCamera = !useBackCamera;
+  startCamera();
+};
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: useBackCamera ? "environment" : "user"
+      },
+      audio: false
+    });
+
+    video.srcObject = stream;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 
   try {
 
