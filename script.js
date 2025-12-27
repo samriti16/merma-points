@@ -1,13 +1,19 @@
+// defaults
 let angulPx = 42;
 let heightPx = 600;
 let totalAngul = 0;
 
+// element refs
+const screen0 = document.getElementById("screen0");
+const screen1 = document.getElementById("screen1");
+const screen2 = document.getElementById("screen2");
+const screen3 = document.getElementById("screen3");
+
 const video = document.getElementById("video");
+const video2 = document.getElementById("video2");
 const pointsDiv = document.getElementById("points");
 
-//
-// ---------- NAVIGATION ----------
-//
+// ---------------- NAVIGATION ----------------
 function goToFinger(){
  screen0.classList.add("hidden");
  screen1.classList.remove("hidden");
@@ -16,83 +22,72 @@ function goToFinger(){
 function goToHeight(){
  screen1.classList.add("hidden");
  screen2.classList.remove("hidden");
- startCamera();   // turn camera ON here
+ startCamera(video); // show camera in height step
 }
 
 function goToAR(){
  screen2.classList.add("hidden");
  screen3.classList.remove("hidden");
- startCamera();
+ startCamera(video2);
 }
 
-//
-// ---------- ANGUL ----------
-//
+// ---------------- ANGUL ----------------
 function updateAngul(){
  angulPx = angulSlider.value;
  angulValue.innerText = angulPx;
- angulBox.style.width = angulPx+"px";
+ angulBox.style.width = angulPx + "px";
 }
 
-//
-// ---------- HEIGHT ----------
-//
+// ---------------- HEIGHT ----------------
 function updateHeight(){
  heightPx = heightSlider.value;
- totalAngul = Math.round(heightPx/angulPx);
+ totalAngul = Math.round(heightPx / angulPx);
  angulTotal.innerText = totalAngul;
- heightBox.style.height = heightPx/4+"px";
+ heightBox.style.height = (heightPx / 4) + "px";
 }
 
-//
-// ---------- CAMERA START ----------
-//
-async function startCamera(){
+// ---------------- CAMERA ----------------
+async function startCamera(vidEl){
 
  try{
    const stream = await navigator.mediaDevices.getUserMedia({
-     video:{facingMode:{ideal:"environment"}},
-     audio:false
+     video: { facingMode: { ideal: "environment" }},
+     audio: false
    });
 
-   video.srcObject = stream;
-   statusText.innerText = "Camera Active ✔ Point camera at body";
+   vidEl.srcObject = stream;
 
  }catch(e){
-   statusText.innerText = "Camera blocked: "+e.message;
+   alert("Camera blocked: " + e.message);
  }
 }
 
-//
-// ---------- ANALYZE BODY ----------
-// (currently simulated marma layout)
-//
+// ---------------- ANALYZE BODY ----------------
 function analyze(){
 
- pointsDiv.innerHTML="";
+ pointsDiv.innerHTML = "";
 
  const map = [
- {y:0.18,name:"Ani Marma",txt:"Shoulder joint marma"},
- {y:0.30,name:"Hridaya Marma",txt:"Heart centre marma"},
- {y:0.50,name:"Sthanmoola",txt:"Chest base marma"},
- {y:0.70,name:"Indravasti",txt:"Calf marma"},
- {y:0.85,name:"Janu",txt:"Knee marma"}
+  {y:0.18,name:"Ani Marma",txt:"Shoulder joint marma"},
+  {y:0.30,name:"Hridaya Marma",txt:"Heart centre"},
+  {y:0.50,name:"Sthanmoola Marma",txt:"Base of chest"},
+  {y:0.70,name:"Indravasti Marma",txt:"Calf region"},
+  {y:0.85,name:"Janu Marma",txt:"Knee marma"}
  ];
 
- map.forEach(m=>{
-  const d=document.createElement("div");
-  d.className="mar-point";
-  d.style.left="50%";
-  d.style.top=(video.clientHeight*m.y)+"px";
-  d.onclick=()=>openPopup(m.name,m.txt);
-  pointsDiv.appendChild(d);
- });
+ const h = video2.clientHeight;
 
+ map.forEach(m=>{
+   const d=document.createElement("div");
+   d.className="mar-point";
+   d.style.left="50%";
+   d.style.top=(h*m.y)+"px";
+   d.onclick=()=>openPopup(m.name,m.txt);
+   pointsDiv.appendChild(d);
+ });
 }
 
-//
-// ---------- POPUP ----------
-//
+// ---------------- POPUP ----------------
 function openPopup(a,b){
  popup.classList.remove("hidden");
  pTitle.innerText=a;
