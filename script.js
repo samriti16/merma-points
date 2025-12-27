@@ -8,24 +8,23 @@ const video = document.getElementById("video");
 const pointsDiv = document.getElementById("points");
 const heightBox = document.getElementById("heightBox");
 
-// status labels (may exist only on some screens — so optional)
 const status2 = document.getElementById("status2");
 const statusText = document.getElementById("statusText");
 
 let currentStream = null;
 let useBackCamera = true;
 
-
 //
 // ---------- START CAMERA ----------
 async function startCamera() {
 
-  // stop previous stream if running
+  // stop previous camera
   if (currentStream) {
     currentStream.getTracks().forEach(t => t.stop());
   }
 
   try {
+
     const constraints = {
       video: { facingMode: useBackCamera ? "environment" : "user" },
       audio: false
@@ -38,26 +37,25 @@ async function startCamera() {
     currentStream = stream;
     video.srcObject = stream;
 
-    // wait for video to actually start
     await video.play();
 
     if (status2) status2.innerText = "Camera Active ✔";
     if (statusText) statusText.innerText = "Camera Active ✔";
 
   } catch (err) {
+
     console.error("❌ CAMERA ERROR:", err.name, err.message);
 
     if (status2) status2.innerText = "Camera failed ❌";
     if (statusText) statusText.innerText = "Camera failed ❌";
 
-    // fallback from back → front automatically
+    // fallback automatically
     if (useBackCamera) {
       useBackCamera = false;
       startCamera();
     }
   }
 }
-
 
 //
 // ---------- SWITCH CAMERA ----------
@@ -66,28 +64,22 @@ function switchCamera() {
   startCamera();
 }
 
-
 //
-// ---------- ANGUL MEASUREMENT ----------
+// ---------- ANGUL ----------
 function updateAngul() {
   angulPx = angulSlider.value;
   angulValue.innerText = angulPx;
   angulBox.style.width = angulPx + "px";
 }
 
-
 //
 // ---------- HEIGHT ----------
 function updateHeight() {
-
   heightPx = heightSlider.value;
-
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
-
   heightBox.style.height = (heightPx / 4) + "px";
 }
-
 
 //
 // ---------- NAVIGATION ----------
@@ -105,12 +97,11 @@ function goToHeight() {
 function goToAR() {
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
-  startCamera();
+  startCamera();     // <-- only this. no video.play() here
 }
 
-
 //
-// ---------- SIMPLE STATIC MARMA POINTS ----------
+// ---------- STATIC MARMA POINTS ----------
 function analyze() {
 
   pointsDiv.innerHTML = "";
@@ -129,7 +120,7 @@ function analyze() {
   map.forEach(m => {
 
     const d = document.createElement("div");
-    d.className = "marma-point";
+    d.className = "mar-point";
 
     d.style.top = (vh * m.y) + "px";
     d.style.left = "50%";
@@ -139,7 +130,6 @@ function analyze() {
     pointsDiv.appendChild(d);
   });
 }
-
 
 //
 // ---------- POPUP ----------
@@ -153,9 +143,8 @@ function closePopup() {
   popup.classList.add("hidden");
 }
 
-
 //
-// ---------- EXPOSE FOR HTML BUTTONS ----------
+// ---------- EXPOSE ----------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
 window.goToAR = goToAR;
