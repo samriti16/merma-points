@@ -53,6 +53,27 @@ function updateHeight(){
 
   heightBox.style.height = (heightPx / 4) + "px";
 }
+let useBackCamera = true;
+let currentStream = null;
+
+async function switchCamera(){
+
+  // stop old stream
+  if(currentStream){
+    currentStream.getTracks().forEach(t => t.stop());
+  }
+
+  useBackCamera = !useBackCamera;
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video:{
+      facingMode: useBackCamera ? "environment" : "user"
+    }
+  });
+
+  currentStream = stream;
+  video.srcObject = stream;
+}
 
 
 
@@ -123,44 +144,31 @@ mpCamera.start();
 //
 function analyze(){
 
-  pointsDiv.innerHTML = "";
+  points.innerHTML = "";
 
-  if(!latestPose){
-    alert("No body detected. Stand inside camera frame.");
-    return;
-  }
+  const vh = video.clientHeight;
 
-  // key anatomical references
-  const nose = latestPose[0];
-  const shoulderMidY = (latestPose[11].y + latestPose[12].y)/2;
-  const hipMidY = (latestPose[23].y + latestPose[24].y)/2;
-  const kneeMidY = (latestPose[25].y + latestPose[26].y)/2;
-  const ankleMidY = (latestPose[27].y + latestPose[28].y)/2;
-
-  // map marma positions in live proportion
-  const marmaMap = [
-    { y:nose.y, name:"Sringataka", text:"Vital head marma" },
-    { y:shoulderMidY, name:"Ani Marma", text:"Shoulder joint marma" },
-    { y:hipMidY, name:"Nabhi Marma", text:"Navel energy centre" },
-    { y:kneeMidY, name:"Janu Marma", text:"Knee marma" },
-    { y:ankleMidY, name:"Gulpha Marma", text:"Ankle marma" }
+  const map = [
+    {y:0.18,name:"Ani",txt:"Shoulder marma"},
+    {y:0.30,name:"Hridaya",txt:"Heart marma"},
+    {y:0.50,name:"Sthanmoola",txt:"Chest base"},
+    {y:0.70,name:"Indravasti",txt:"Calf"},
+    {y:0.85,name:"Janu",txt:"Knee"}
   ];
 
-  marmaMap.forEach(m=>{
+  map.forEach(m=>{
 
-    const p = document.createElement("div");
-    p.className = "mar-point";
+    const d=document.createElement("div");
+    d.className="mar-point";
 
-    // convert relative Y → pixel
-    p.style.left = "50%";
-    p.style.top = (m.y * video.clientHeight) + "px";
+    d.style.top = (vh*m.y) + "px";
+    d.style.left = "50%";
 
-    p.onclick = ()=>openPopup(m.name, m.text);
+    d.onclick = ()=>openPopup(m.name,m.txt);
 
-    pointsDiv.appendChild(p);
+    points.appendChild(d);
 
   });
-
 }
 
 
