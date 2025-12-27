@@ -49,3 +49,33 @@ video{
   padding:20px;
   border-radius:15px 15px 0 0;
 }
+#canvasArea{
+  position: relative;
+  display: inline-block;
+}
+
+#video{
+  width: 90%;
+  border:2px solid cyan;
+  border-radius:12px;
+}
+
+#overlay{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+#heightBox{
+  pointer-events:none;
+  position:absolute;
+  border:2px dashed yellow;
+  width:120px;
+  height:200px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
