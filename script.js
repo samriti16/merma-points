@@ -26,8 +26,13 @@ function switchCamera(){
 // ********* LOAD MEDIAPIPE POSE ********
 //
 const pose = new Pose.Pose({
-  locateFile: (file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+  locateFile: (file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
+function goToFinger(){
+  screen0.classList.add("hidden");
+  screen1.classList.remove("hidden");
+}
+
 
 pose.setOptions({
   modelComplexity:1,
