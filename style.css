@@ -87,3 +87,11 @@ body{
   width:85%;
   z-index:9999;
 }
+#points{
+  pointer-events:none;   /* overlay won't block clicks */
+}
+
+.mar-point{
+  pointer-events:auto;   /* BUT dots will still receive clicks */
+}
+
