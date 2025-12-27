@@ -9,18 +9,42 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
 .hidden { display:none }
 
-.box {
+/* finger box */
+.box{
   border:2px dashed cyan;
-  width:42%;
-  height:200px;
+  width:42px;
+  height:120px;
   margin:auto;
 }
 
+/* height box */
 #heightBox{
   border:2px dashed yellow;
   width:120px;
   height:200px;
   margin:auto;
+}
+
+/* video + canvas stack */
+#canvasArea{
+  position:relative;
+  display:inline-block;
+}
+
+/* camera */
+#video{
+ width:90vw;
+ border:2px solid cyan;
+ border-radius:12px;
+}
+
+/* marma dots */
+#points{
+ position:absolute;
+ top:0;
+ left:0;
+ width:100%;
+ height:100%;
 }
 
 .mar-point{
@@ -30,16 +54,11 @@ body { background:black; color:white; text-align:center; font-family:Arial }
  border-radius:50%;
  border:2px solid white;
  position:absolute;
+ transform:translate(-50%,-50%);
+ cursor:pointer;
 }
-#video{
- width:90%;
- border:2px solid cyan;
- border-radius:12px;
-}
-#canvasArea{
- position:relative;
- display:inline-block;
-}
+
+/* popup */
 .popup{
  background:#111;
  padding:15px;
@@ -64,7 +83,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <button onclick="goToFinger()">Start</button>
 </div>
 
-<!-- STEP 1 Angul -->
+<!-- STEP 1 -->
 <div id="screen1" class="hidden">
 <h3>Step 1 — Measure Angul</h3>
 <p>Place finger & match rectangle width</p>
@@ -73,14 +92,18 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
 <input type="range" id="angulSlider" min="20" max="120" value="42" oninput="updateAngul()">
 
-<p>1 Angul = <span id="angulValue">60</span> pixels</p>
+<p>1 Angul = <span id="angulValue">42</span> pixels</p>
 
 <button onclick="goToHeight()">Next → Height Measurement</button>
 </div>
 
-<!-- STEP 2 Height -->
+<!-- STEP 2 -->
 <div id="screen2" class="hidden">
 <h3>Step 2 — Measure Height</h3>
+
+<p id="status2">Camera loading…</p>
+
+<video id="video" autoplay playsinline muted></video>
 
 <div id="heightBox"></div>
 
@@ -91,18 +114,16 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <button onclick="goToAR()">Start AR Visualization</button>
 </div>
 
-<!-- STEP 3 AR -->
+<!-- STEP 3 -->
 <div id="screen3" class="hidden">
-
-<p id="statusText">Initializing camera…</p>
+<p id="statusText">Point camera at full body</p>
 
 <div id="canvasArea">
-<video id="video" autoplay playsinline muted></video>
-<div id="points"></div>
+ <video id="video2" autoplay playsinline muted></video>
+ <div id="points"></div>
 </div>
 
 <button onclick="analyze()">Analyze Body</button>
-
 </div>
 
 <!-- POPUP -->
