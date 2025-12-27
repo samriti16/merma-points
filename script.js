@@ -14,37 +14,48 @@ let useBackCamera = true;
 
 //
 // ---------- START CAMERA ----------
-async function startCamera() {
 
-  // stop old stream if exists
-  if (currentStream) {
+async function startCamera(){
+
+  if(currentStream){
     currentStream.getTracks().forEach(t => t.stop());
   }
 
-  try {
+  try{
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: useBackCamera ? "environment" : "user" },
+    const constraints = {
+      video: {
+        facingMode: useBackCamera ? "environment" : "user"
+      },
       audio: false
-    });
-
-    currentStream = stream;
-    video.srcObject = stream;
-
-    video.onloadedmetadata = () => {
-      if (status2) status2.innerText = "Camera Active ✔";
-      if (statusText) statusText.innerText = "Camera Active ✔";
     };
 
-  } catch (err) {
-    console.log(err);
-    if (status2) status2.innerText = "Camera blocked ❌";
-    if (statusText) statusText.innerText = "Camera blocked ❌";
+    console.log("🔍 Requesting camera:", constraints);
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    currentStream = stream;
+
+    video.srcObject = stream;
+
+    await video.play();
+
+    statusText.innerText = "Camera Active ✔";
+
+  } catch(err){
+
+    console.error("❌ CAMERA ERROR:", err.name, err.message);
+
+    statusText.innerText = "Camera failed: " + err.name;
+
+    // 🔁 fallback to front camera automatically
+    if(useBackCamera){
+      useBackCamera = false;
+      startCamera();
+    }
   }
 }
 
-
-//
 // ---------- SWITCH CAMERA ----------
 function switchCamera() {
   useBackCamera = !useBackCamera;
