@@ -8,54 +8,58 @@ const video = document.getElementById("video");
 const pointsDiv = document.getElementById("points");
 const heightBox = document.getElementById("heightBox");
 
+// status labels (may exist only on some screens — so optional)
+const status2 = document.getElementById("status2");
+const statusText = document.getElementById("statusText");
+
 let currentStream = null;
 let useBackCamera = true;
 
 
 //
 // ---------- START CAMERA ----------
+async function startCamera() {
 
-async function startCamera(){
-
-  if(currentStream){
+  // stop previous stream if running
+  if (currentStream) {
     currentStream.getTracks().forEach(t => t.stop());
   }
 
-  try{
-
+  try {
     const constraints = {
-      video: {
-        facingMode: useBackCamera ? "environment" : "user"
-      },
+      video: { facingMode: useBackCamera ? "environment" : "user" },
       audio: false
     };
 
-    console.log("🔍 Requesting camera:", constraints);
+    console.log("🎥 requesting camera:", constraints);
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
     currentStream = stream;
-
     video.srcObject = stream;
 
+    // wait for video to actually start
     await video.play();
 
-    statusText.innerText = "Camera Active ✔";
+    if (status2) status2.innerText = "Camera Active ✔";
+    if (statusText) statusText.innerText = "Camera Active ✔";
 
-  } catch(err){
-
+  } catch (err) {
     console.error("❌ CAMERA ERROR:", err.name, err.message);
 
-    statusText.innerText = "Camera failed: " + err.name;
+    if (status2) status2.innerText = "Camera failed ❌";
+    if (statusText) statusText.innerText = "Camera failed ❌";
 
-    // 🔁 fallback to front camera automatically
-    if(useBackCamera){
+    // fallback from back → front automatically
+    if (useBackCamera) {
       useBackCamera = false;
       startCamera();
     }
   }
 }
 
+
+//
 // ---------- SWITCH CAMERA ----------
 function switchCamera() {
   useBackCamera = !useBackCamera;
