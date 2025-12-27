@@ -89,23 +89,33 @@ function updateHeight() {
 
 //
 // ---------- NAVIGATION ----------
-function goToFinger() {
+function goToFinger(){
   screen0.classList.add("hidden");
   screen1.classList.remove("hidden");
+
+  heightBox.classList.add("hidden");
+  points.classList.add("hidden");
 }
 
-function goToHeight() {
+
+function goToHeight(){
   screen1.classList.add("hidden");
   screen2.classList.remove("hidden");
+
   startCamera();
+
+  heightBox.classList.remove("hidden"); // show yellow box
+  points.classList.add("hidden");       // hide red points
 }
 
-function goToAR() {
+
+function goToAR(){
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
-  startCamera();     // <-- only this. no video.play() here
-}
 
+  heightBox.classList.add("hidden");    // hide yellow box
+  points.classList.remove("hidden");    // show marma points
+}
 //
 // ---------- STATIC MARMA POINTS ----------
 function analyze() {
