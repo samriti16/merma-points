@@ -127,7 +127,7 @@ function goToAR(){
 //----------------------------------------------------
 const pose = new Pose({
   locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.3/${file}`
 });
 
 pose.setOptions({
