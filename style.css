@@ -84,4 +84,8 @@ body{
   min-height: 240px;
   background:black;
 }
+.hidden{
+  display:none !important;
+}
+
 
