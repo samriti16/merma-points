@@ -21,7 +21,6 @@ let latestPose = null;
 // 🎥 START CAMERA
 //----------------------------------------------------
 async function startCamera() {
-
   try {
     if (currentStream)
       currentStream.getTracks().forEach(t => t.stop());
@@ -77,6 +76,7 @@ function updateHeight(){
   heightPx = heightSlider.value;
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
+
   heightBox.style.height = (heightPx / 4) + "px";
 }
 
@@ -95,7 +95,6 @@ function goToHeight(){
   screen1.classList.add("hidden");
   screen2.classList.remove("hidden");
 
-  // ensure camera area is visible
   document.getElementById("canvasArea").classList.remove("hidden");
 
   startCamera();
@@ -123,7 +122,7 @@ function goToAR(){
 //----------------------------------------------------
 const pose = new Pose({
   locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/${file}`
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
 pose.setOptions({
@@ -134,15 +133,10 @@ pose.setOptions({
 });
 
 pose.onResults((results)=>{
-  latestPose = results.poseLandmarks;
-  drawDynamicMarmaPoints();
-});
-pose.onResults((results)=>{
   console.log("POSE FOUND ✔");
   latestPose = results.poseLandmarks;
   drawDynamicMarmaPoints();
 });
-
 
 //----------------------------------------------------
 // 🚀 START LIVE POSE TRACKING
@@ -166,7 +160,6 @@ function startPoseTracking(){
 function drawDynamicMarmaPoints(){
 
   pointsDiv.innerHTML = "";
-
   if(!latestPose) return;
 
   function mp(id){ return latestPose[id]; }
@@ -185,6 +178,7 @@ function drawDynamicMarmaPoints(){
   const vh = video.clientHeight;
 
   map.forEach(m => {
+
     const lm = mp(m.id);
     if(!lm) return;
 
@@ -192,14 +186,15 @@ function drawDynamicMarmaPoints(){
     const y = lm.y * vh;
 
     const d = document.createElement("div");
-    d.className = "mar-point";
+    d.className = "marma-point";   // ✅ FIXED name
+
     d.style.left = x + "px";
     d.style.top = y + "px";
-    d.addEventListener("click", () => openPopup(m.name, m.txt));
-    d.addEventListener("touchstart", () => openPopup(m.name, m.txt), {passive:true});
-    pointsDiv.appendChild(d);
 
-   
+    // works on mobile + desktop
+    d.addEventListener("pointerdown", () => openPopup(m.name, m.txt));
+
+    pointsDiv.appendChild(d);
   });
 }
 
@@ -210,7 +205,7 @@ function analyze(){
 
 //----------------------------------------------------
 function openPopup(a, b){
-  console.log("POPUP OPEN", a);   // <-- debug
+  console.log("POPUP OPEN", a);
   popup.classList.remove("hidden");
   pTitle.innerText = a;
   pText.innerText = b;
@@ -220,12 +215,8 @@ function closePopup(){
   popup.classList.add("hidden");
 }
 
-d.onclick = ()=> {
-  console.log("dot clicked");
-  openPopup(m.name, m.txt);
-};
-
-
+//----------------------------------------------------
+// 🌍 EXPORT
 //----------------------------------------------------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
