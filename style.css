@@ -1,0 +1,64 @@
+body{
+  background:#000;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+#camera-box{
+  width:90%;
+  max-width:650px;
+  margin:auto;
+  border:2px solid #2affc2;
+  border-radius:18px;
+  padding:10px;
+  position:relative;
+}
+
+video{
+  width:100%;
+  border-radius:15px;
+}
+
+/* marma dots */
+
+.dot{
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#ff4444;
+  position:absolute;
+  cursor:pointer;
+  border:2px solid white;
+}
+
+/* popup */
+
+.popup{
+  background:white;
+  color:black;
+  padding:10px;
+  width:300px;
+  border-radius:10px;
+  margin:auto;
+}
+
+.hidden{
+  display:none;
+}
+
+/* loader */
+#loader{
+  width:40px;
+  height:40px;
+  border:5px solid #2affc2;
+  border-top:5px solid transparent;
+  border-radius:50%;
+  margin:10px auto;
+  animation:spin 1s infinite linear;
+  display:none;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}

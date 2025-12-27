@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marma Sthal Identifier</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>Marma Sthal Identifier</h2>
+
+<p id="status">Click Start to Begin</p>
+
+<div id="loader"></div>
+
+<div id="camera-box">
+  <video id="video" autoplay playsinline></video>
+
+  <!-- overlay points -->
+  <div id="points" class="hidden">
+    <!-- points will be injected by JS -->
+  </div>
+</div>
+
+<button onclick="startAnalysis()">Start Analysis</button>
+
+<!-- popup -->
+<div id="popup" class="hidden popup">
+  <h3 id="popup-title"></h3>
+  <p id="popup-text"></p>
+  <button onclick="closePopup()">Close</button>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
