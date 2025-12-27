@@ -192,7 +192,7 @@ function drawDynamicMarmaPoints(){
     const y = lm.y * vh;
 
     const d = document.createElement("div");
-    d.className = "mar-point";
+    d.className = "marma-point";
     d.style.left = x + "px";
     d.style.top = y + "px";
     d.onclick = ()=>openPopup(m.name, m.txt);
@@ -215,6 +215,11 @@ function openPopup(a,b){
 function closePopup(){
   popup.classList.add("hidden");
 }
+d.onclick = ()=> {
+  console.log("dot clicked");
+  openPopup(m.name, m.txt);
+};
+
 
 //----------------------------------------------------
 window.goToFinger = goToFinger;
