@@ -117,9 +117,13 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 <div id="screen2" class="hidden">
   <h3>Step 2 — Measure Height</h3>
 
-  <p id="status2">Camera loading…</p>
+  <p id="status2">Camera Active ✔</p>
 
- 
+  <div id="canvasArea">
+      <video id="video" autoplay playsinline muted></video>
+      <div id="heightBox"></div>
+      <div id="points"></div>
+  </div>
 
   <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
 
@@ -127,6 +131,7 @@ body { background:black; color:white; text-align:center; font-family:Arial }
 
   <button onclick="goToAR()">Start AR Visualization</button>
 </div>
+
 <!-- STEP 3 -->
 <div id="screen3" class="hidden">
 
