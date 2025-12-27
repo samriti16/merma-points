@@ -1,5 +1,3 @@
-const video = document.getElementById("video");
-
 //
 // ----------- GLOBAL VALUES -----------
 let angulPx = 42;
@@ -33,23 +31,22 @@ async function startCamera() {
     currentStream = stream;
     video.srcObject = stream;
 
-    // update status text when video actually loads
     video.onloadedmetadata = () => {
       if (status2) status2.innerText = "Camera Active ✔";
       if (statusText) statusText.innerText = "Camera Active ✔";
     };
 
   } catch (err) {
-    if (status2) status2.innerText = "Camera blocked ❌ allow camera in browser settings";
-    if (statusText) statusText.innerText = "Camera blocked ❌";
     console.log(err);
+    if (status2) status2.innerText = "Camera blocked ❌";
+    if (statusText) statusText.innerText = "Camera blocked ❌";
   }
 }
 
 
 //
 // ---------- SWITCH CAMERA ----------
-async function switchCamera() {
+function switchCamera() {
   useBackCamera = !useBackCamera;
   startCamera();
 }
@@ -73,7 +70,6 @@ function updateHeight() {
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
 
-  // visual yellow box scale
   heightBox.style.height = (heightPx / 4) + "px";
 }
 
@@ -99,31 +95,35 @@ function goToAR() {
 
 
 //
-// ---------- STATIC MARMA (SIMULATION NOW) ----------
-async function startCamera() {
+// ---------- SIMPLE STATIC MARMA POINTS ----------
+function analyze() {
 
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-  }
+  pointsDiv.innerHTML = "";
 
-  try {
+  const rect = video.getBoundingClientRect();
+  const vh = rect.height;
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: useBackCamera ? "environment" : "user" },
-      audio: false
-    });
+  const map = [
+    { y: 0.18, name: "Ani Marma", txt: "Shoulder joint marma" },
+    { y: 0.30, name: "Hridaya Marma", txt: "Heart centre marma" },
+    { y: 0.50, name: "Sthanamoola", txt: "Base of chest" },
+    { y: 0.70, name: "Indravasti", txt: "Calf marma" },
+    { y: 0.85, name: "Janu", txt: "Knee marma" }
+  ];
 
-    currentStream = stream;
+  map.forEach(m => {
 
-    // 🔥 send video to the ONLY video element
-    video.srcObject = stream;
+    const d = document.createElement("div");
+    d.className = "marma-point";
 
-  } catch (err) {
-    console.log(err);
-  }
+    d.style.top = (vh * m.y) + "px";
+    d.style.left = "50%";
+
+    d.onclick = () => openPopup(m.name, m.txt);
+
+    pointsDiv.appendChild(d);
+  });
 }
-
-
 
 
 //
@@ -140,7 +140,7 @@ function closePopup() {
 
 
 //
-// ---------- EXPOSE FOR HTML ----------
+// ---------- EXPOSE FOR HTML BUTTONS ----------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
 window.goToAR = goToAR;
