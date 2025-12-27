@@ -15,22 +15,19 @@ const statusText = document.getElementById("statusText");
 let currentStream = null;
 let useBackCamera = true;
 
-let latestPose = null;   // <-- real pose stored here
+let latestPose = null;
 
 //----------------------------------------------------
-// 🎥 START CAMERA (used for BOTH Step 2 & Step 3)
+// 🎥 START CAMERA
 //----------------------------------------------------
 async function startCamera() {
 
   try {
-
     if (currentStream)
       currentStream.getTracks().forEach(t => t.stop());
 
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: useBackCamera ? "environment" : "user"
-      },
+      video: { facingMode: useBackCamera ? "environment" : "user" },
       audio: false
     });
 
@@ -77,12 +74,9 @@ function updateAngul(){
 // 📏 HEIGHT
 //----------------------------------------------------
 function updateHeight(){
-
   heightPx = heightSlider.value;
-
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
-
   heightBox.style.height = (heightPx / 4) + "px";
 }
 
@@ -101,6 +95,9 @@ function goToHeight(){
   screen1.classList.add("hidden");
   screen2.classList.remove("hidden");
 
+  // ensure camera area is visible
+  document.getElementById("canvasArea").classList.remove("hidden");
+
   startCamera();
 
   heightBox.classList.remove("hidden");
@@ -112,11 +109,13 @@ function goToAR(){
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
 
+  document.getElementById("canvasArea").classList.remove("hidden");
+
   heightBox.classList.add("hidden");
   pointsDiv.classList.remove("hidden");
 
-  startCamera();            // camera stays ON
-  startPoseTracking();      // <-- enable Mediapipe
+  startCamera();
+  startPoseTracking();
 }
 
 //----------------------------------------------------
@@ -156,44 +155,30 @@ function startPoseTracking(){
 }
 
 //----------------------------------------------------
-// 🔴 PLACE MARMA POINTS USING BODY LANDMARKS
+// 🔴 PLACE MARMA POINTS
 //----------------------------------------------------
 function drawDynamicMarmaPoints(){
 
   pointsDiv.innerHTML = "";
 
-  if(!latestPose){
-    return;
-  }
+  if(!latestPose) return;
 
   function mp(id){ return latestPose[id]; }
 
   const map = [
-
-    // head between eyes
     {id: 10, name:"Sira Matrika", txt:"Head marma"},
-
-    // chest centre between shoulders
     {id: 12, name:"Hridaya", txt:"Heart marma"},
-
-    // navel close to midpoint hip line
     {id: 24, name:"Nabhi", txt:"Navel marma"},
-
-    // knee left/right
     {id: 25, name:"Janu", txt:"Knee marma"},
     {id: 26, name:"Janu", txt:"Knee marma"},
-
-    // ankle
     {id: 27, name:"Gulpha", txt:"Ankle marma"},
     {id: 28, name:"Gulpha", txt:"Ankle marma"}
-
   ];
 
   const vw = video.clientWidth;
   const vh = video.clientHeight;
 
   map.forEach(m => {
-
     const lm = mp(m.id);
     if(!lm) return;
 
@@ -204,23 +189,16 @@ function drawDynamicMarmaPoints(){
     d.className = "mar-point";
     d.style.left = x + "px";
     d.style.top = y + "px";
-
     d.onclick = ()=>openPopup(m.name, m.txt);
-
     pointsDiv.appendChild(d);
   });
-
 }
 
-//----------------------------------------------------
-// 🧍 Static fallback button (optional)
 //----------------------------------------------------
 function analyze(){
   drawDynamicMarmaPoints();
 }
 
-//----------------------------------------------------
-// 🔳 POPUP
 //----------------------------------------------------
 function openPopup(a,b){
   popup.classList.remove("hidden");
@@ -232,8 +210,6 @@ function closePopup(){
   popup.classList.add("hidden");
 }
 
-//----------------------------------------------------
-// 🌍 BIND BUTTONS
 //----------------------------------------------------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
