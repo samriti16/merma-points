@@ -1,97 +1,105 @@
-// defaults
-let angulPx = 42;
-let heightPx = 600;
-let totalAngul = 0;
+let video = document.getElementById("video");
+let pointsDiv = document.getElementById("points");
 
-// element refs
-const screen0 = document.getElementById("screen0");
-const screen1 = document.getElementById("screen1");
-const screen2 = document.getElementById("screen2");
-const screen3 = document.getElementById("screen3");
+let usingBackCamera = true;
 
-const video = document.getElementById("video");
-const video2 = document.getElementById("video2");
-const pointsDiv = document.getElementById("points");
-
-// ---------------- NAVIGATION ----------------
-function goToFinger(){
- screen0.classList.add("hidden");
- screen1.classList.remove("hidden");
+//
+// ******** START CAMERA ********
+//
+async function startCamera(){
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video:{ facingMode: usingBackCamera ? "environment" : "user" },
+    audio:false
+  });
+  video.srcObject = stream;
 }
 
-function goToHeight(){
- screen1.classList.add("hidden");
- screen2.classList.remove("hidden");
- startCamera(video); // show camera in height step
+//
+// ******** SWITCH CAMERA ********
+//
+function switchCamera(){
+  usingBackCamera = !usingBackCamera;
+  startCamera();
 }
 
-function goToAR(){
- screen2.classList.add("hidden");
- screen3.classList.remove("hidden");
- startCamera(video2);
+//
+// ********* LOAD MEDIAPIPE POSE ********
+//
+const pose = new Pose.Pose({
+  locateFile: (file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+});
+
+pose.setOptions({
+  modelComplexity:1,
+  smoothLandmarks:true,
+  enableSegmentation:false,
+  minDetectionConfidence:0.6,
+  minTrackingConfidence:0.6
+});
+
+pose.onResults(onPoseResults);
+
+//
+// ******** RUN AI ON CAMERA ********
+//
+const camera = new Camera(video,{
+  onFrame: async()=> { await pose.send({image: video}); },
+  width: 640,
+  height: 480
+});
+
+camera.start();
+
+//
+// ******** HANDLE AI OUTPUT ********
+//
+function onPoseResults(results){
+
+  pointsDiv.innerHTML = "";
+
+  if(!results.poseLandmarks) return;
+
+  const L = results.poseLandmarks;
+
+  // key body reference points
+  const head = L[0].y;
+  const foot = Math.max(L[31].y, L[32].y);
+
+  // normalize body height
+  const bodyHeight = foot - head;
+
+  // Marma proportional rules
+  const marmas = [
+    { r:0.18 , name:"Ani Marma", text:"Shoulder joint marma" },
+    { r:0.30 , name:"Hridaya", text:"Heart region marma" },
+    { r:0.50 , name:"Sthanamula", text:"Base of chest marma" },
+    { r:0.70 , name:"Indravasti", text:"Calf vascular marma" },
+    { r:0.85 , name:"Janu", text:"Knee marma" }
+  ];
+
+  marmas.forEach(m=>{
+
+    let y = (head + bodyHeight*m.r) * video.clientHeight;
+    let x = video.clientWidth/2;
+
+    const dot = document.createElement("div");
+    dot.className="mar-point";
+    dot.style.top = y+"px";
+    dot.style.left = x+"px";
+
+    dot.onclick = ()=>openPopup(m.name,m.text);
+
+    pointsDiv.appendChild(dot);
+  });
 }
 
-// ---------------- ANGUL ----------------
-function updateAngul(){
- angulPx = angulSlider.value;
- angulValue.innerText = angulPx;
- angulBox.style.width = angulPx + "px";
-}
-
-// ---------------- HEIGHT ----------------
-function updateHeight(){
- heightPx = heightSlider.value;
- totalAngul = Math.round(heightPx / angulPx);
- angulTotal.innerText = totalAngul;
- heightBox.style.height = (heightPx / 4) + "px";
-}
-
-// ---------------- CAMERA ----------------
-async function startCamera(vidEl){
-
- try{
-   const stream = await navigator.mediaDevices.getUserMedia({
-     video: { facingMode: { ideal: "environment" }},
-     audio: false
-   });
-
-   vidEl.srcObject = stream;
-
- }catch(e){
-   alert("Camera blocked: " + e.message);
- }
-}
-
-// ---------------- ANALYZE BODY ----------------
-function analyze(){
-
- pointsDiv.innerHTML = "";
-
- const map = [
-  {y:0.18,name:"Ani Marma",txt:"Shoulder joint marma"},
-  {y:0.30,name:"Hridaya Marma",txt:"Heart centre"},
-  {y:0.50,name:"Sthanmoola Marma",txt:"Base of chest"},
-  {y:0.70,name:"Indravasti Marma",txt:"Calf region"},
-  {y:0.85,name:"Janu Marma",txt:"Knee marma"}
- ];
-
- const h = video2.clientHeight;
-
- map.forEach(m=>{
-   const d=document.createElement("div");
-   d.className="mar-point";
-   d.style.left="50%";
-   d.style.top=(h*m.y)+"px";
-   d.onclick=()=>openPopup(m.name,m.txt);
-   pointsDiv.appendChild(d);
- });
-}
-
-// ---------------- POPUP ----------------
+//
+// ******** POPUP ********
+//
 function openPopup(a,b){
- popup.classList.remove("hidden");
- pTitle.innerText=a;
- pText.innerText=b;
+  popup.classList.remove("hidden");
+  pTitle.innerText=a;
+  pText.innerText=b;
 }
 
 function closePopup(){
