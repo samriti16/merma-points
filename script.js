@@ -1,3 +1,5 @@
+const video2 = document.getElementById("video3");
+
 //
 // ----------- GLOBAL VALUES -----------
 let angulPx = 42;
@@ -98,35 +100,37 @@ function goToAR() {
 
 //
 // ---------- STATIC MARMA (SIMULATION NOW) ----------
-function analyze() {
+async function startCamera() {
 
-  pointsDiv.innerHTML = "";
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+  }
 
-  // ensure layout is ready
-  const rect = video.getBoundingClientRect();
-  const vh = rect.height;
+  try {
 
-  const map = [
-    { y: 0.18, name: "Ani Marma", txt: "Shoulder joint marma" },
-    { y: 0.30, name: "Hridaya Marma", txt: "Heart centre" },
-    { y: 0.50, name: "Sthanamoola", txt: "Base of chest" },
-    { y: 0.70, name: "Indravasti", txt: "Calf marma" },
-    { y: 0.85, name: "Janu", txt: "Knee marma" }
-  ];
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: useBackCamera ? "environment" : "user" },
+      audio: false
+    });
 
-  map.forEach(m => {
+    currentStream = stream;
 
-    const d = document.createElement("div");
-    d.className = "mar-point";
+    // send to both step-2 and step-3 video players
+    video.srcObject  = stream;
+    video2.srcObject = stream;
 
-    d.style.top = (vh * m.y) + "px";
-    d.style.left = "50%";
+    video.onloadedmetadata = () => {
+      if (status2) status2.innerText = "Camera Active ✔";
+      if (statusText) statusText.innerText = "Camera Active ✔";
+    };
 
-    d.onclick = () => openPopup(m.name, m.txt);
-
-    pointsDiv.appendChild(d);
-  });
+  } catch (err) {
+    if (status2) status2.innerText = "Camera blocked ❌ allow permissions";
+    if (statusText) statusText.innerText = "Camera blocked ❌";
+    console.log(err);
+  }
 }
+
 
 
 //
