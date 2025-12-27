@@ -217,6 +217,11 @@ function openPopup(a, b){
 function closePopup(){
   popup.classList.add("hidden");
 }
+pose.onResults((results)=>{
+  console.log("POSE FOUND");
+  latestPose = results.poseLandmarks;
+  drawDynamicMarmaPoints();
+});
 
 //----------------------------------------------------
 // 🌍 EXPORT
