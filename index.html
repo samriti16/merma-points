@@ -21,7 +21,7 @@ body{
   position:relative;
   width:90vw;
   max-width:480px;
-  margin:auto;
+  margin:8px auto;
 }
 
 /* VIDEO */
@@ -33,14 +33,26 @@ body{
   border-radius:12px;
 }
 
-/* OVERLAY */
+/* skeleton overlay */
+#poseCanvas{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:2;
+}
+
+/* marma overlay dots */
 #points{
   position:absolute;
   inset:0;
   pointer-events:none;
+  z-index:3;
 }
 
-/* CLICKABLE DOTS */
+/* clickable dots */
 .marma-point{
   width:18px;
   height:18px;
@@ -49,19 +61,19 @@ body{
   border-radius:50%;
   position:absolute;
   transform:translate(-50%,-50%);
-  pointer-events:auto;
   cursor:pointer;
+  pointer-events:auto;
 }
 
-/* ANGUL FINGER BOX */
+/* finger box */
 .box{
   border:2px dashed cyan;
   width:42px;
   height:120px;
-  margin:18px auto;
+  margin:12px auto;
 }
 
-/* HEIGHT BOX */
+/* height box */
 #heightBox{
   position:absolute;
   top:8%;
@@ -73,7 +85,7 @@ body{
   pointer-events:none;
 }
 
-/* POPUP */
+/* popup */
 .popup{
   position:fixed;
   bottom:20px;
@@ -88,38 +100,39 @@ body{
 }
 </style>
 
-<!-- Mediapipe (same version!) -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.3/pose.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
-
+<!-- Mediapipe SAME VERSION as script -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.5/camera_utils.js"></script>
 
 </head>
 <body>
 
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
 
-<!-- CAMERA AREA -->
+<!-- CAMERA WRAPPER -->
 <div id="canvasArea" class="hidden">
-  
-  <!-- bottom layer -->
+
+  <!-- video feed -->
   <video id="video" autoplay playsinline muted></video>
 
-  <!-- skeleton on top -->
+  <!-- skeleton -->
   <canvas id="poseCanvas"></canvas>
 
-  <!-- marma points on top -->
+  <!-- marma dots -->
   <div id="points" class="hidden"></div>
 
-  <!-- used earlier in height step -->
+  <!-- height box (Step 2) -->
   <div id="heightBox" class="hidden"></div>
 
 </div>
+
 
 <!-- STEP 0 -->
 <div id="screen0">
   <p>By continuing you consent to camera access.</p>
   <button onclick="goToFinger()">Start</button>
 </div>
+
 
 <!-- STEP 1 -->
 <div id="screen1" class="hidden">
@@ -135,6 +148,7 @@ body{
   <button onclick="goToHeight()">Next → Height Measurement</button>
 </div>
 
+
 <!-- STEP 2 -->
 <div id="screen2" class="hidden">
   <h3>Step 2 — Measure Height</h3>
@@ -148,16 +162,17 @@ body{
   <button onclick="goToAR()">Start AR Visualization</button>
 </div>
 
+
 <!-- STEP 3 -->
-  <div id="screen3" class="hidden">
+<div id="screen3" class="hidden">
   <p id="statusText">Point camera at full body</p>
 
-  <!-- buttons NOW directly under camera -->
   <div style="margin-top:6px">
     <button onclick="analyze()">Analyze Body</button>
     <button onclick="switchCamera()">Switch Camera</button>
   </div>
 </div>
+
 
 <!-- POPUP -->
 <div id="popup" class="hidden popup">
@@ -166,7 +181,7 @@ body{
   <button onclick="closePopup()">Close</button>
 </div>
 
-<script src="script.js?v=7" defer></script>
+<script src="script.js?v=9" defer></script>
 
 </body>
 </html>
