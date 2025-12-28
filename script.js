@@ -105,7 +105,6 @@ function goToHeight() {
 
   startCamera();
 }
-
 function goToAR() {
 
   screen2.classList.add("hidden");
@@ -113,17 +112,11 @@ function goToAR() {
 
   canvasArea.classList.remove("hidden");
 
-  // hide height box
   heightBox.classList.add("hidden");
+  points.classList.add("hidden");   // hide until analyze
 
-  // IMPORTANT: hide points until Analyze is clicked
-  points.classList.add("hidden");
-
-  // only camera starts here
-  startCamera();
+  startCamera();                    // only camera starts
 }
-
-
 
 // ---------------- MEDIAPIPE POSE ----------------
 const pose = new Pose({
@@ -163,14 +156,11 @@ function startPoseTracking(){
 
 // ------------- ANALYZE BUTTON HANDLER -------------
 function analyze(){
-
-  // show points now
-  points.classList.remove("hidden");
-
-  // start pose reading loop
-  startPoseTracking();
+  points.classList.remove("hidden");  // show
+  startPoseTracking();                // begin landmark loop
 }
 
+window.analyze = analyze;
 
 // ------------- DRAW MARMA POINTS -------------
 function drawDynamicMarmaPoints() {
