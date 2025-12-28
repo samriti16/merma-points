@@ -36,7 +36,7 @@ async function startCamera(){
     });
 
     video.srcObject = currentStream;
-    await video.play().catch(()=>{});
+    await video.play();
 
     resizeCanvas();
 
@@ -49,16 +49,15 @@ async function startCamera(){
 }
 
 
-// ---------- KEEP CANVAS IN SYNC ----------
+// ---------- KEEP CANVAS MATCHING VIDEO ----------
 function resizeCanvas(){
   poseCanvas.width = video.clientWidth;
   poseCanvas.height = video.clientHeight;
 }
-
 window.addEventListener("resize", resizeCanvas);
 
 
-// ---------- UI NAVIGATION ----------
+// ---------- NAVIGATION ----------
 function switchCamera(){
   useBackCamera = !useBackCamera;
   startCamera();
@@ -74,16 +73,14 @@ function goToHeight(){
   screen2.classList.remove("hidden");
 
   canvasArea.classList.remove("hidden");
-
   heightBox.classList.remove("hidden");
+
   points.classList.add("hidden");
 
   startCamera();
 }
 
-// ----------- FINAL AR SCREEN -----------
 function goToAR(){
-
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
 
@@ -93,7 +90,7 @@ function goToAR(){
   points.classList.add("hidden");
 
   startCamera();
-  startPoseTracking();
+  trackingActive = false;
 }
 
 
@@ -114,14 +111,13 @@ function updateHeight(){
 }
 
 
-// ---------- MEDIAPIPE POSE ----------
+// ---------- MEDIAPIPE POSE (STABLE 0.5) ----------
 const pose = new Pose({
-  locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`
+  locateFile: (file)=>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
-// REQUIRED to avoid WASM abort
-pose.initialize().catch(console.error);
+// ❌ DO NOT CALL pose.initialize()
 
 pose.setOptions({
   modelComplexity: 1,
@@ -146,16 +142,14 @@ function drawSkeleton(results){
   const vw = poseCanvas.width;
   const vh = poseCanvas.height;
 
-  // joints
-  ctx.fillStyle="rgba(0,255,255,.9)";
+  ctx.fillStyle="cyan";
   results.poseLandmarks.forEach(lm=>{
     ctx.beginPath();
     ctx.arc(lm.x*vw, lm.y*vh, 4, 0, Math.PI*2);
     ctx.fill();
   });
 
-  // bones
-  ctx.strokeStyle="rgba(0,255,255,.7)";
+  ctx.strokeStyle="cyan";
   ctx.lineWidth=2;
 
   window.POSE_CONNECTIONS.forEach(([a,b])=>{
@@ -172,13 +166,13 @@ function drawSkeleton(results){
 
 
 // ---------- ANALYZE BUTTON ----------
-async function analyze(){
+function analyze(){
   trackingActive = true;
   points.classList.remove("hidden");
 }
 
 
-// ---------- TRACKING LOOP ----------
+// ---------- CONTINUOUS LOOP ----------
 async function trackingLoop(){
   if(trackingActive && video.readyState>=2){
     await pose.send({image:video});
@@ -186,11 +180,7 @@ async function trackingLoop(){
   }
   requestAnimationFrame(trackingLoop);
 }
-
-async function startPoseTracking(){
-  await pose.initialize();
-  trackingLoop();
-}
+trackingLoop();
 
 
 // ---------- MARMA POINTS ----------
@@ -207,13 +197,13 @@ function drawDynamicMarmaPoints(){
   const mp = (id)=>latestPose[id];
 
   const marma = [
-    { id:10, name:"Śira Marma (Head)", desc:"Controls sense organs and prāṇa vāyu."},
-    { id:12, name:"Hṛdaya Marma (Heart)", desc:"Seat of ojas and consciousness."},
-    { id:24, name:"Nābhi Marma (Navel)", desc:"Centre of digestion and metabolism."},
-    { id:25, name:"Jānu Marma (Left Knee)", desc:"Supports locomotion."},
-    { id:26, name:"Jānu Marma (Right Knee)", desc:"Supports locomotion."},
-    { id:27, name:"Gulpha Marma (Left Ankle)", desc:"Stability + movement."},
-    { id:28, name:"Gulpha Marma (Right Ankle)", desc:"Stability + movement."}
+    { id:10, name:"Śira (Head)", desc:"Controls prāṇa & senses" },
+    { id:12, name:"Hṛdaya (Heart)", desc:"Seat of ojas & consciousness" },
+    { id:24, name:"Nābhi (Navel)", desc:"Centre of digestion (agni)" },
+    { id:25, name:"Jānu L", desc:"Supports locomotion" },
+    { id:26, name:"Jānu R", desc:"Supports locomotion" },
+    { id:27, name:"Gulpha L", desc:"Stability & movement" },
+    { id:28, name:"Gulpha R", desc:"Stability & movement" }
   ];
 
   marma.forEach(m=>{
@@ -224,16 +214,16 @@ function drawDynamicMarmaPoints(){
     const x = lm.x * vw;
     const y = lm.y * vh;
 
-    const dot=document.createElement("div");
+    const dot = document.createElement("div");
     dot.className="marma-point";
-    dot.style.left=x+"px";
-    dot.style.top =y+"px";
+    dot.style.left = x+"px";
+    dot.style.top  = y+"px";
 
-    const angulFromTop = Math.round((y / vh) * totalAngul);
+    const angulFromTop = Math.round((y/vh)*totalAngul);
 
-    dot.onclick=()=>openPopup(
+    dot.onclick = ()=>openPopup(
       m.name,
-      m.desc + `\n\n📏 Numerical Position: ${angulFromTop} Aṅgula from crown`
+      `${m.desc}\n\n📏 Position: ${angulFromTop} Aṅgula from crown`
     );
 
     points.appendChild(dot);
@@ -253,7 +243,7 @@ function closePopup(){
 }
 
 
-// ---------- EXPORT TO WINDOW ----------
+// ---------- EXPORT ----------
 window.goToFinger=goToFinger;
 window.goToHeight=goToHeight;
 window.goToAR=goToAR;
