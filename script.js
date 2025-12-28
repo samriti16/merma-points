@@ -12,225 +12,230 @@ let useBackCamera = true;
 // ---------- DOM ----------
 const video = document.getElementById("video");
 const points = document.getElementById("points");
+const poseCanvas = document.getElementById("poseCanvas");
+const ctx = poseCanvas.getContext("2d");
+
 const heightBox = document.getElementById("heightBox");
-
 const canvasArea = document.getElementById("canvasArea");
-
-const screen0 = document.getElementById("screen0");
-const screen1 = document.getElementById("screen1");
-const screen2 = document.getElementById("screen2");
-const screen3 = document.getElementById("screen3");
-
-const angulSlider = document.getElementById("angulSlider");
-const angulValue  = document.getElementById("angulValue");
-const angulBox    = document.getElementById("angulBox");
-
-const heightSlider = document.getElementById("heightSlider");
-const angulTotal   = document.getElementById("angulTotal");
 
 const status2 = document.getElementById("status2");
 const statusText = document.getElementById("statusText");
 
+// ------------ CAMERA ------------
+async function startCamera(){
 
-// ---------------- CAMERA ----------------
-async function startCamera() {
   try {
-
     if (currentStream)
-      currentStream.getTracks().forEach(t => t.stop());
+      currentStream.getTracks().forEach(t=>t.stop());
 
     currentStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: useBackCamera ? "environment" : "user" },
-      audio: false
+      video:{ facingMode: useBackCamera ? "environment" : "user" },
+      audio:false
     });
 
     video.srcObject = currentStream;
-    await video.play().catch(()=>{});   // ignore AbortError safely
+    await video.play().catch(()=>{});
 
-    if (status2) status2.innerText = "Camera Active ✔";
-    if (statusText) statusText.innerText = "Camera Active ✔";
+    resizeCanvas();
 
-  } catch (err) {
-    console.warn("Camera error", err);
+    if(status2) status2.innerText="Camera Active ✔";
+    if(statusText) statusText.innerText="Camera Active ✔";
 
-    if (status2) status2.innerText = "Camera failed ❌";
-    if (statusText) statusText.innerText = "Camera failed ❌";
-
-    if (useBackCamera) {
-      useBackCamera = false;
-      startCamera();
-    }
+  } catch(err){
+    console.warn(err);
   }
 }
 
-function switchCamera() {
+function resizeCanvas(){
+  poseCanvas.width = video.clientWidth;
+  poseCanvas.height = video.clientHeight;
+}
+
+window.addEventListener("resize", resizeCanvas);
+
+// ---------- BUTTONS ----------
+function switchCamera(){
   useBackCamera = !useBackCamera;
   startCamera();
 }
 
-
-// ---------------- ANGUL ----------------
-function updateAngul() {
+// ---------- ANGUL ----------
+function updateAngul(){
   angulPx = +angulSlider.value;
   angulValue.innerText = angulPx;
-  angulBox.style.width = angulPx + "px";
+  angulBox.style.width = angulPx+"px";
 }
 
-
-// ---------------- HEIGHT ----------------
-function updateHeight() {
+// ---------- HEIGHT ----------
+function updateHeight(){
   heightPx = +heightSlider.value;
-
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
-
-  heightBox.style.height = (heightPx / 4) + "px";
+  heightBox.style.height = (heightPx/4)+"px";
 }
 
-
-// ---------------- NAVIGATION ----------------
-function goToFinger() {
+// ---------- NAVIGATION ----------
+function goToFinger(){
   screen0.classList.add("hidden");
   screen1.classList.remove("hidden");
 }
 
-function goToHeight() {
+function goToHeight(){
   screen1.classList.add("hidden");
   screen2.classList.remove("hidden");
 
   canvasArea.classList.remove("hidden");
-
   heightBox.classList.remove("hidden");
   points.classList.add("hidden");
 
   startCamera();
 }
-function goToAR() {
 
+function goToAR(){
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
 
-  canvasArea.classList.remove("hidden");
-
   heightBox.classList.add("hidden");
-  points.classList.add("hidden");   // hide until analyze
+  points.classList.remove("hidden");
 
-  startCamera();                    // only camera starts
+  startCamera();
 }
 
-// ---------------- MEDIAPIPE POSE ----------------
+// ------------- MEDIAPIPE -------------
 const pose = new Pose({
-  locateFile: (file) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+  locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
 pose.setOptions({
-  modelComplexity: 1,
-  smoothLandmarks: true,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
+  modelComplexity:1,
+  smoothLandmarks:true,
+  minDetectionConfidence:0.5,
+  minTrackingConfidence:0.5
 });
 
-pose.onResults((results) => {
+// drawing utils
+const POSE_CONNECTIONS = window.POSE_CONNECTIONS;
+
+pose.onResults((results)=>{
+
   latestPose = results.poseLandmarks;
 
-  if (!latestPose) return;
-
-  drawDynamicMarmaPoints();
+  drawSkeleton(results);
 });
 
+// ----------- SKELETON DRAW ----------
+function drawSkeleton(results){
 
-// ------------- START LIVE TRACKING AFTER ANALYZE -------------
-function startPoseTracking(){
+  ctx.clearRect(0,0,poseCanvas.width,poseCanvas.height);
 
-  async function loop() {
-    if (video.readyState >= 2) {
-      await pose.send({ image: video });
-    }
-    requestAnimationFrame(loop);
+  if(!results.poseLandmarks) return;
+
+  const vw = poseCanvas.width;
+  const vh = poseCanvas.height;
+
+  // draw joints
+  ctx.fillStyle="rgba(0,255,255,.9)";
+
+  results.poseLandmarks.forEach(lm=>{
+    ctx.beginPath();
+    ctx.arc(lm.x*vw, lm.y*vh, 4, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // draw bones
+  ctx.strokeStyle="rgba(0,255,255,.7)";
+  ctx.lineWidth=2;
+
+  POSE_CONNECTIONS.forEach(([a,b])=>{
+    const p1 = results.poseLandmarks[a];
+    const p2 = results.poseLandmarks[b];
+    if(!p1||!p2) return;
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x*vw, p1.y*vh);
+    ctx.lineTo(p2.x*vw, p2.y*vh);
+    ctx.stroke();
+  });
+}
+
+// ---------- ANALYZE BUTTON ----------
+async function analyze(){
+  await pose.send({image:video});
+  drawDynamicMarmaPoints();
+}
+
+// ---------- LIVE LOOP ----------
+async function trackingLoop(){
+  if(video.readyState>=2){
+    await pose.send({image:video});
   }
-
-  loop();
+  requestAnimationFrame(trackingLoop);
 }
 
-
-// ------------- ANALYZE BUTTON HANDLER -------------
-function analyze(){
-  points.classList.remove("hidden");  // show
-  startPoseTracking();                // begin landmark loop
+// call this once on AR screen
+function startPoseTracking(){
+  trackingLoop();
 }
 
-window.analyze = analyze;
+// ---------- MARMA POINTS ----------
+function drawDynamicMarmaPoints(){
 
-// ------------- DRAW MARMA POINTS -------------
-function drawDynamicMarmaPoints() {
+  points.innerHTML="";
 
-  points.innerHTML = "";
-  if (!latestPose) return;
+  if(!latestPose) return;
 
   const rect = video.getBoundingClientRect();
   const vw = rect.width;
   const vh = rect.height;
 
-  const mp = (id) => latestPose[id];
+  const mp = (id)=>latestPose[id];
 
-  const marmaMap = [
-    { id: 10, name: "Sira Matrika", txt: "Head marma" },
-    { id: 12, name: "Hridaya", txt: "Heart marma" },
-    { id: 24, name: "Nabhi", txt: "Navel marma" },
-    { id: 25, name: "Janu", txt: "Left knee" },
-    { id: 26, name: "Janu", txt: "Right knee" },
-    { id: 27, name: "Gulpha", txt: "Left ankle" },
-    { id: 28, name: "Gulpha", txt: "Right ankle" }
+  const map = [
+    {id:10, name:"Sira Matrika"},
+    {id:12, name:"Hridaya"},
+    {id:24, name:"Nabhi"},
+    {id:25, name:"Janu (L)"},
+    {id:26, name:"Janu (R)"},
+    {id:27, name:"Gulpha (L)"},
+    {id:28, name:"Gulpha (R)"}
   ];
 
-  marmaMap.forEach(m => {
-
+  map.forEach(m=>{
     const lm = mp(m.id);
-    if (!lm) return;
+    if(!lm) return;
 
-    const x = lm.x * vw;
-    const y = lm.y * vh;
+    const dot=document.createElement("div");
+    dot.className="marma-point";
 
-    if (!isFinite(x) || !isFinite(y)) return;
+    dot.style.left=(lm.x*vw)+"px";
+    dot.style.top =(lm.y*vh)+"px";
 
-    const dot = document.createElement("div");
-    dot.className = "marma-point";
-
-    dot.style.left = x + "px";
-    dot.style.top  = y + "px";
-
-    dot.addEventListener("pointerdown",
-      () => openPopup(m.name, m.txt)
-    );
+    dot.onclick=()=>openPopup(m.name);
 
     points.appendChild(dot);
   });
 }
 
-
-// ------------- POPUP -------------
-function openPopup(a, b) {
+// ---------- POPUP ----------
+function openPopup(name){
   popup.classList.remove("hidden");
-  pTitle.innerText = a;
-  pText.innerText = b;
+  pTitle.innerText=name;
+  pText.innerText="Skeletal overlay active — marma located by pose landmark.";
 }
 
-function closePopup() {
+function closePopup(){
   popup.classList.add("hidden");
 }
 
-
-// ------------- EXPORT -------------
-window.goToFinger = goToFinger;
-window.goToHeight = goToHeight;
-window.goToAR = goToAR;
-
-window.switchCamera = switchCamera;
-
-window.updateAngul = updateAngul;
-window.updateHeight = updateHeight;
-
-window.analyze = analyze;   // <<<<<< IMPORTANT
-
-window.closePopup = closePopup;
+// ---------- EXPORT ----------
+window.goToFinger=goToFinger;
+window.goToHeight=goToHeight;
+window.goToAR=()=>{
+  goToAR();
+  startPoseTracking();
+};
+window.updateAngul=updateAngul;
+window.updateHeight=updateHeight;
+window.switchCamera=switchCamera;
+window.analyze=analyze;
+window.closePopup=closePopup;
