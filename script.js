@@ -114,7 +114,7 @@ function updateHeight(){
 // ---------- MEDIAPIPE POSE (STABLE 0.5) ----------
 const pose = new Pose({
   locateFile: (file)=>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.3/${file}`
 });
 
 // ❌ DO NOT CALL pose.initialize()
