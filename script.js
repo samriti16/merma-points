@@ -1,3 +1,7 @@
+const popup = document.getElementById("popup");
+const pTitle = document.getElementById("pTitle");
+const pText  = document.getElementById("pText");
+
 console.log("DOM Ready");
 
 // ---------- GLOBAL ----------
