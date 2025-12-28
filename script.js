@@ -244,31 +244,35 @@ function drawDynamicMarmaPoints(){
     const angulTotal = totalAngul || 1;
 
     const angulFromTop = Math.round((pointPx / bodyPx) * angulTotal);
+    // mobile–safe click
+dot.addEventListener("pointerdown", () => {
 
-    // CLICK HANDLER
-    dot.onclick = () => {
+  const bodyPx = vh;
+  const pointPx = Math.round(y);
+  const angul = totalAngul;
 
-      const descriptionHtml = `
-        <b>${m.name}</b><br>
-        ${m.desc}<br><br>
+  const angulFromTop = Math.round((pointPx / bodyPx) * angul);
 
-        <b>📐 Numerical Calculation</b><br>
-        Body height = ${bodyPx} px<br>
-        Point position = ${pointPx} px<br>
-        Total Height = ${angulTotal} Aṅgula<br><br>
+  const descriptionHtml = `
+    <b>${m.name}</b><br>
+    ${m.desc}<br><br>
 
-        Formula:<br>
-        Aṅgula = (Point px / Body px) × Total Aṅgula<br><br>
+    <b>📐 Numerical Calculation</b><br>
+    Total height = ${bodyPx} px<br>
+    Point position = ${pointPx} px<br>
+    Total height = ${angul} Aṅgula<br><br>
 
-        Substitution:<br>
-        Aṅgula = (${pointPx} / ${bodyPx}) × ${angulTotal}<br><br>
+    Formula:<br>
+    Aṅgula = (Point px / Body px) × Total Aṅgula<br><br>
 
-        <b>➡ Result:</b> ${angulFromTop} Aṅgula from crown
-      `;
+    Substitution:<br>
+    Aṅgula = (${pointPx} / ${bodyPx}) × ${angul}<br><br>
 
-      openPopup(m.name, descriptionHtml);
-    };
+    <b>➡ Result:</b> ${angulFromTop} Aṅgula from crown
+  `;
 
+  openPopup(m.name, descriptionHtml);
+});
     points.appendChild(dot);
   });
 }
