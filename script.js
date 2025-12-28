@@ -196,12 +196,11 @@ trackingLoop();
 function drawDynamicMarmaPoints(){
 
   points.innerHTML = "";
+  if (!latestPose) return;
 
-  if(!latestPose) return;
-
-  const rect = video.getBoundingClientRect();
-  const vw = rect.width;
-  const vh = rect.height;
+  // keep same scale as pose skeleton
+  const vw = poseCanvas.width;
+  const vh = poseCanvas.height;
 
   const mp = (id)=>latestPose[id];
 
@@ -209,31 +208,62 @@ function drawDynamicMarmaPoints(){
     { id:10, name:"Śira (Head)", desc:"Controls prāṇa & senses" },
     { id:12, name:"Hṛdaya (Heart)", desc:"Seat of ojas & consciousness" },
     { id:24, name:"Nābhi (Navel)", desc:"Centre of digestion (agni)" },
-    { id:25, name:"Jānu L", desc:"Supports locomotion" },
-    { id:26, name:"Jānu R", desc:"Supports locomotion" },
-    { id:27, name:"Gulpha L", desc:"Stability & movement" },
-    { id:28, name:"Gulpha R", desc:"Stability & movement" }
+    { id:25, name:"Jānu (Left Knee)", desc:"Supports locomotion" },
+    { id:26, name:"Jānu (Right Knee)", desc:"Supports locomotion" },
+    { id:27, name:"Gulpha (Left Ankle)", desc:"Stability & movement" },
+    { id:28, name:"Gulpha (Right Ankle)", desc:"Stability & movement" }
   ];
 
-  marma.forEach(m=>{
+  marma.forEach(m => {
 
     const lm = mp(m.id);
-    if(!lm) return;
+    if (!lm) return;
 
-    const x = lm.x * vw;
-    const y = lm.y * vh;
+    let x = lm.x * vw;
+    let y = lm.y * vh;
 
+    // clamp so dot never goes outside frame
+    x = Math.min(Math.max(x, 0), vw);
+    y = Math.min(Math.max(y, 0), vh);
+
+    // create dot
     const dot = document.createElement("div");
     dot.className = "marma-point";
     dot.style.left = x + "px";
     dot.style.top  = y + "px";
 
-    const angulFromTop = Math.round((y/vh)*totalAngul);
+    // pixel calculations
+    const bodyPx = vh;
+    const pointPx = Math.round(y);
 
-    dot.onclick = ()=>openPopup(
-      m.name,
-      `${m.desc}<br><br><b>📏 Position:</b> ${angulFromTop} Aṅgula from crown`
-    );
+    // avoid divide-by-zero
+    const angulTotal = totalAngul || 1;
+
+    const angulFromTop = Math.round((pointPx / bodyPx) * angulTotal);
+
+    // CLICK HANDLER
+    dot.onclick = () => {
+
+      const descriptionHtml = `
+        <b>${m.name}</b><br>
+        ${m.desc}<br><br>
+
+        <b>📐 Numerical Calculation</b><br>
+        Body height = ${bodyPx} px<br>
+        Point position = ${pointPx} px<br>
+        Total Height = ${angulTotal} Aṅgula<br><br>
+
+        Formula:<br>
+        Aṅgula = (Point px / Body px) × Total Aṅgula<br><br>
+
+        Substitution:<br>
+        Aṅgula = (${pointPx} / ${bodyPx}) × ${angulTotal}<br><br>
+
+        <b>➡ Result:</b> ${angulFromTop} Aṅgula from crown
+      `;
+
+      openPopup(m.name, descriptionHtml);
+    };
 
     points.appendChild(dot);
   });
