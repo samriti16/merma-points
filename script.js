@@ -112,6 +112,7 @@ function goToAR(){
 
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
+  points.classList.remove("hidden");
 
   document.getElementById("canvasArea").classList.remove("hidden");
 
