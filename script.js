@@ -5,18 +5,31 @@ let angulPx = 42;
 let heightPx = 600;
 let totalAngul = 0;
 
-// DOM elements
+let latestPose = null;
+let currentStream = null;
+let useBackCamera = true;
+
+// ---------- DOM ----------
 const video = document.getElementById("video");
 const points = document.getElementById("points");
 const heightBox = document.getElementById("heightBox");
 
+const canvasArea = document.getElementById("canvasArea");
+
+const screen0 = document.getElementById("screen0");
+const screen1 = document.getElementById("screen1");
+const screen2 = document.getElementById("screen2");
+const screen3 = document.getElementById("screen3");
+
+const angulSlider = document.getElementById("angulSlider");
+const angulValue  = document.getElementById("angulValue");
+const angulBox    = document.getElementById("angulBox");
+
+const heightSlider = document.getElementById("heightSlider");
+const angulTotal   = document.getElementById("angulTotal");
+
 const status2 = document.getElementById("status2");
 const statusText = document.getElementById("statusText");
-
-let currentStream = null;
-let useBackCamera = true;
-
-let latestPose = null;
 
 
 // ---------------- CAMERA ----------------
@@ -26,20 +39,19 @@ async function startCamera() {
     if (currentStream)
       currentStream.getTracks().forEach(t => t.stop());
 
-    const stream = await navigator.mediaDevices.getUserMedia({
+    currentStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: useBackCamera ? "environment" : "user" },
       audio: false
     });
 
-    currentStream = stream;
-    video.srcObject = stream;
-    await video.play();
+    video.srcObject = currentStream;
+    await video.play().catch(()=>{});   // ignore AbortError safely
 
     if (status2) status2.innerText = "Camera Active ✔";
     if (statusText) statusText.innerText = "Camera Active ✔";
 
   } catch (err) {
-    console.log("Camera error", err);
+    console.warn("Camera error", err);
 
     if (status2) status2.innerText = "Camera failed ❌";
     if (statusText) statusText.innerText = "Camera failed ❌";
@@ -59,7 +71,7 @@ function switchCamera() {
 
 // ---------------- ANGUL ----------------
 function updateAngul() {
-  angulPx = angulSlider.value;
+  angulPx = +angulSlider.value;
   angulValue.innerText = angulPx;
   angulBox.style.width = angulPx + "px";
 }
@@ -67,7 +79,7 @@ function updateAngul() {
 
 // ---------------- HEIGHT ----------------
 function updateHeight() {
-  heightPx = heightSlider.value;
+  heightPx = +heightSlider.value;
 
   totalAngul = Math.round(heightPx / angulPx);
   angulTotal.innerText = totalAngul;
@@ -102,7 +114,7 @@ function goToAR() {
   canvasArea.classList.remove("hidden");
 
   heightBox.classList.add("hidden");
-  points.classList.remove("hidden");   // <<< IMPORTANT
+  points.classList.remove("hidden");
 
   startCamera();
   startPoseTracking();
@@ -115,7 +127,6 @@ const pose = new Pose({
     `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
 });
 
-
 pose.setOptions({
   modelComplexity: 1,
   smoothLandmarks: true,
@@ -126,12 +137,8 @@ pose.setOptions({
 pose.onResults((results) => {
   latestPose = results.poseLandmarks;
 
-  if (!latestPose) {
-    console.log("❌ NO POSE");
-    return;
-  }
+  if (!latestPose) return;
 
-  console.log("✔ POSE FOUND");
   drawDynamicMarmaPoints();
 });
 
@@ -139,29 +146,27 @@ pose.onResults((results) => {
 // ------------- START LIVE TRACKING -------------
 function startPoseTracking(){
 
-  async function process() {
+  async function loop() {
     if (video.readyState >= 2) {
       await pose.send({ image: video });
     }
-    requestAnimationFrame(process);
+    requestAnimationFrame(loop);
   }
 
-  process();
+  loop();
 }
-
 
 
 // ------------- DRAW MARMA POINTS -------------
 function drawDynamicMarmaPoints() {
 
   points.innerHTML = "";
-
   if (!latestPose) return;
 
-  console.log("drawing dots", latestPose.length);
-
-  const vw = video.clientWidth;
-  const vh = video.clientHeight;
+  // make sure we have real size
+  const rect = video.getBoundingClientRect();
+  const vw = rect.width;
+  const vh = rect.height;
 
   const mp = (id) => latestPose[id];
 
@@ -169,10 +174,10 @@ function drawDynamicMarmaPoints() {
     { id: 10, name: "Sira Matrika", txt: "Head marma" },
     { id: 12, name: "Hridaya", txt: "Heart marma" },
     { id: 24, name: "Nabhi", txt: "Navel marma" },
-    { id: 25, name: "Janu", txt: "Knee marma" },
-    { id: 26, name: "Janu", txt: "Knee marma" },
-    { id: 27, name: "Gulpha", txt: "Ankle marma" },
-    { id: 28, name: "Gulpha", txt: "Ankle marma" }
+    { id: 25, name: "Janu", txt: "Left knee" },
+    { id: 26, name: "Janu", txt: "Right knee" },
+    { id: 27, name: "Gulpha", txt: "Left ankle" },
+    { id: 28, name: "Gulpha", txt: "Right ankle" }
   ];
 
   marmaMap.forEach(m => {
@@ -180,18 +185,24 @@ function drawDynamicMarmaPoints() {
     const lm = mp(m.id);
     if (!lm) return;
 
+    const x = lm.x * vw;
+    const y = lm.y * vh;
+
+    // ignore if invalid
+    if (!isFinite(x) || !isFinite(y)) return;
+
     const dot = document.createElement("div");
     dot.className = "marma-point";
 
-    dot.style.left = (lm.x * vw) + "px";
-    dot.style.top = (lm.y * vh) + "px";
+    dot.style.left = x + "px";
+    dot.style.top  = y + "px";
 
-    dot.addEventListener("pointerdown", () => openPopup(m.name, m.txt));
+    dot.addEventListener("pointerdown",
+      () => openPopup(m.name, m.txt)
+    );
 
     points.appendChild(dot);
   });
-
-  console.log("dots drawn:", points.children.length);
 }
 
 
@@ -207,7 +218,7 @@ function closePopup() {
 }
 
 
-// ------------- EXPORT TO HTML -------------
+// ------------- EXPORT -------------
 window.goToFinger = goToFinger;
 window.goToHeight = goToHeight;
 window.goToAR = goToAR;
@@ -216,7 +227,5 @@ window.switchCamera = switchCamera;
 
 window.updateAngul = updateAngul;
 window.updateHeight = updateHeight;
-
-window.analyze = drawDynamicMarmaPoints;
 
 window.closePopup = closePopup;
