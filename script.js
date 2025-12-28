@@ -113,12 +113,16 @@ function goToAR() {
 
   canvasArea.classList.remove("hidden");
 
+  // hide height box
   heightBox.classList.add("hidden");
-  points.classList.remove("hidden");
 
+  // IMPORTANT: hide points until Analyze is clicked
+  points.classList.add("hidden");
+
+  // only camera starts here
   startCamera();
-  startPoseTracking();
 }
+
 
 
 // ---------------- MEDIAPIPE POSE ----------------
@@ -143,7 +147,7 @@ pose.onResults((results) => {
 });
 
 
-// ------------- START LIVE TRACKING -------------
+// ------------- START LIVE TRACKING AFTER ANALYZE -------------
 function startPoseTracking(){
 
   async function loop() {
@@ -157,13 +161,23 @@ function startPoseTracking(){
 }
 
 
+// ------------- ANALYZE BUTTON HANDLER -------------
+function analyze(){
+
+  // show points now
+  points.classList.remove("hidden");
+
+  // start pose reading loop
+  startPoseTracking();
+}
+
+
 // ------------- DRAW MARMA POINTS -------------
 function drawDynamicMarmaPoints() {
 
   points.innerHTML = "";
   if (!latestPose) return;
 
-  // make sure we have real size
   const rect = video.getBoundingClientRect();
   const vw = rect.width;
   const vh = rect.height;
@@ -188,7 +202,6 @@ function drawDynamicMarmaPoints() {
     const x = lm.x * vw;
     const y = lm.y * vh;
 
-    // ignore if invalid
     if (!isFinite(x) || !isFinite(y)) return;
 
     const dot = document.createElement("div");
@@ -227,5 +240,7 @@ window.switchCamera = switchCamera;
 
 window.updateAngul = updateAngul;
 window.updateHeight = updateHeight;
+
+window.analyze = analyze;   // <<<<<< IMPORTANT
 
 window.closePopup = closePopup;
