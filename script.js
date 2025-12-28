@@ -37,6 +37,8 @@ async function startCamera(){
 
     video.srcObject = currentStream;
     await video.play();
+    video.onloadedmetadata = () => resizeCanvas();
+
 
     resizeCanvas();
 
