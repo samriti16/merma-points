@@ -16,44 +16,46 @@ body{
   width:90vw;
   max-width:480px;
   margin:auto;
-}
-
-/* 🎥 VIDEO */
-#video{
+}#video{
   width:100%;
   display:block;
-  background:black;
   border:2px solid cyan;
   border-radius:12px;
-  z-index:1;
 }
 
-/* 🎯 POINT OVERLAY (same size as video) */
+/* skeleton canvas sits EXACTLY on video */
+#poseCanvas{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:2;
+}
+
+/* marma dots overlay */
 #points{
   position:absolute;
-  inset:0;                 /* <— guarantees exact overlay */
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
   z-index:3;
-  pointer-events:none;     /* container ignores clicks */
-
-  /* 🔍 temporary debug help */
-  /* remove later if you want */
-  outline:2px dashed lime;
 }
 
-/* 🔴 CLICKABLE DOTS */
 .marma-point{
-  width:20px;
-  height:20px;
+  width:18px;
+  height:18px;
   background:red;
   border:2px solid white;
   border-radius:50%;
   position:absolute;
-  transform:translate(-50%,-50%);
-  pointer-events:auto;     /* dots clickable */
+  transform:translate(-50%, -50%);
   cursor:pointer;
-  z-index:5;
-  box-shadow:0 0 10px 3px rgba(255,0,0,.6);
 }
+
+
 
 /* 📐 FINGER BOX */
 
