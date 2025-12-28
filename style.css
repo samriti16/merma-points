@@ -4,32 +4,32 @@ body{
   color:white;
   font-family:Arial;
   text-align:center;
+  margin:0;
 }
 
 .hidden{
   display:none !important;
 }
 
-/* 📌 Video wrapper */
+/* ---------- CAMERA AREA ---------- */
+/* wrapper controls all sizing */
 #canvasArea{
   position:relative;
   width:90vw;
   max-width:480px;
-  margin-bottom: 6px;;
+  margin:10px auto;
 }
 
-/* VIDEO */
+/* VIDEO = base layer */
 #video{
   width:100%;
   display:block;
   background:black;
   border:2px solid cyan;
   border-radius:12px;
-  position:relative;
-  z-index:1;
 }
 
-/* skeleton canvas sits EXACTLY on video */
+/* SKELETON CANVAS exactly on video */
 #poseCanvas{
   position:absolute;
   top:0;
@@ -40,18 +40,18 @@ body{
   z-index:2;
 }
 
-/* marma dots overlay */
+/* MARMA POINT OVERLAY on video */
 #points{
   position:absolute;
   top:0;
   left:0;
   width:100%;
   height:100%;
-  pointer-events:none;
   z-index:3;
+  pointer-events:none; /* container ignores */
 }
 
-/* clickable marma point */
+/* clickable dots */
 .marma-point{
   width:18px;
   height:18px;
@@ -61,21 +61,21 @@ body{
   position:absolute;
   transform:translate(-50%, -50%);
   cursor:pointer;
-  pointer-events:auto;
+  pointer-events:auto; /* but dots clickable */
 }
 
-/* 📐 FINGER BOX */
+/* ---------- ANGUL FINGER BOX ---------- */
 .box{
   border:2px dashed cyan;
   width:42px;
   height:120px;
-  margin:18px auto;
+  margin:12px auto;
 }
 
-/* 📏 HEIGHT BOX – match HTML id */
+/* ---------- HEIGHT BOX ---------- */
 #heightBox{
   position:absolute;
-  top:8%;
+  top:6%;
   left:50%;
   transform:translateX(-50%);
   border:2px dashed yellow;
@@ -85,7 +85,17 @@ body{
   z-index:4;
 }
 
-/* 🪟 POPUP */
+/* ---------- STEP-2 MOBILE SPACING FIX ---------- */
+#screen2{
+  margin-top:4px;
+}
+
+/* reduce large gap on phones */
+#screen2 input[type=range]{
+  margin-top:6px;
+}
+
+/* ---------- POPUP ---------- */
 .popup{
   position:fixed;
   bottom:20px;
@@ -99,13 +109,3 @@ body{
   width:85%;
   z-index:9999;
 }
-
-#screen2{
-  margin-top: 4px;
-}
-
-
-#heightSlider{
-  margin-top: 4px;
-}
-
