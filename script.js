@@ -8,8 +8,7 @@ let totalAngul = 0;
 let latestPose = null;
 let trackingActive = false;
 let useBackCamera = true;
-
-let mpCamera = null;
+let currentStream = null;   // <-- FIX added
 
 
 // ---------- DOM ----------
@@ -39,9 +38,7 @@ async function startCamera(){
 
     await video.play();
 
-    video.onloadedmetadata = () => {
-      resizeCanvas();
-    };
+    video.onloadedmetadata = () => resizeCanvas();
 
     if(status2) status2.innerText = "Camera Active ✔";
     if(statusText) statusText.innerText = "Camera Active ✔";
@@ -53,8 +50,7 @@ async function startCamera(){
 }
 
 
-
-// ---------- MATCH CANVAS TO VIDEO ----------
+// ---------- KEEP CANVAS MATCHING VIDEO ----------
 function resizeCanvas(){
   poseCanvas.width  = video.videoWidth;
   poseCanvas.height = video.videoHeight;
@@ -100,7 +96,6 @@ function goToAR(){
   points.classList.add("hidden");
 
   trackingActive = false;
-
   startCamera();
 }
 
@@ -138,9 +133,9 @@ pose.setOptions({
 
 pose.onResults((results)=>{
   latestPose = results.poseLandmarks;
-
   resizeCanvas();
   drawSkeleton(results);
+  drawDynamicMarmaPoints();   // <-- FIX added
 });
 
 
@@ -154,7 +149,6 @@ function drawSkeleton(results){
   const vw = poseCanvas.width;
   const vh = poseCanvas.height;
 
-  // joints
   ctx.fillStyle = "cyan";
   results.poseLandmarks.forEach(lm=>{
     ctx.beginPath();
@@ -162,7 +156,6 @@ function drawSkeleton(results){
     ctx.fill();
   });
 
-  // bones
   ctx.strokeStyle = "cyan";
   ctx.lineWidth = 2;
 
@@ -184,6 +177,19 @@ function analyze(){
   trackingActive = true;
   points.classList.remove("hidden");
 }
+
+
+// ---------- LIVE LOOP (IMPORTANT) ----------
+async function trackingLoop(){
+
+  if(trackingActive && video.readyState >= 2){
+    await pose.send({image: video});   // <-- FIX added
+  }
+
+  requestAnimationFrame(trackingLoop);
+}
+
+trackingLoop();
 
 
 // ---------- MARMA POINT LOGIC ----------
