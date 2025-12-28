@@ -2,7 +2,7 @@
 body{
   background:black;
   color:white;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   text-align:center;
   margin:0;
 }
@@ -17,33 +17,38 @@ body{
   position:relative;
   width:92vw;
   max-width:480px;
-  margin:10px auto;
+  margin:6px auto 4px auto; /* reduced gaps */
 }
 
 /* VIDEO */
 #video{
   width:100%;
+  height:auto;
   display:block;
   border:2px solid cyan;
   border-radius:14px;
 }
 
-/* skeleton overlay */
+/* skeleton overlay (MUST perfectly match video) */
 #poseCanvas{
   position:absolute;
-  inset:0;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
-  z-index:2;
   pointer-events:none;
+  z-index:2;
 }
 
 /* marma overlay */
 #points{
   position:absolute;
-  inset:0;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;  /* parent ignores clicks */
   z-index:3;
-  pointer-events:none; /* container ignores clicks */
 }
 
 /* clickable marma point */
@@ -53,18 +58,19 @@ body{
   background:red;
   border:2px solid white;
   border-radius:50%;
-  transform:translate(-50%,-50%);
   position:absolute;
-  pointer-events:auto; /* CLICKABLE! */
+  transform:translate(-50%,-50%);
+  pointer-events:auto; /* dot IS clickable */
   cursor:pointer;
   z-index:4;
 }
 
-/* HEIGHT BOX */
+/* height box */
 #heightBox{
   position:absolute;
-  inset:0;
-  margin:auto;
+  top:10%;
+  left:50%;
+  transform:translateX(-50%);
   border:2px dashed yellow;
   width:120px;
   height:200px;
@@ -72,26 +78,43 @@ body{
   z-index:5;
 }
 
-/* STEP 2 spacing reduced */
+/* finger box */
+.box{
+  border:2px dashed cyan;
+  width:42px;
+  height:120px;
+  margin:10px auto;
+}
+
+/* step-2 spacing reduced */
 #screen2{
+  margin-top:2px;
+}
+
+/* slider spacing tight */
+input[type=range]{
   margin-top:4px;
 }
 
-/* sliders tighter */
-input[type=range]{
-  margin-top:6px;
-}
-
-/* popup */
+/* popup (scrollable if text long) */
 .popup{
   position:fixed;
   bottom:14px;
   left:50%;
   transform:translateX(-50%);
   width:88%;
+  max-height:60vh;
+  overflow-y:auto;
   background:#111;
   padding:14px;
   border-radius:12px;
   border:1px solid white;
   z-index:9999;
+}
+
+/* popup title emphasis */
+#pTitle{
+  margin-top:0;
+  color:#ffcc66;
+  font-size:18px;
 }
