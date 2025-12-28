@@ -98,16 +98,20 @@ body{
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
 
 <!-- CAMERA AREA -->
-
 <div id="canvasArea" class="hidden">
+  
+  <!-- bottom layer -->
   <video id="video" autoplay playsinline muted></video>
 
-  <!-- NEW canvas for skeleton -->
+  <!-- skeleton on top -->
   <canvas id="poseCanvas"></canvas>
- 
 
-  <div id="heightBox" class="hidden"></div>
+  <!-- marma points on top -->
   <div id="points" class="hidden"></div>
+
+  <!-- used earlier in height step -->
+  <div id="heightBox" class="hidden"></div>
+
 </div>
 
 <!-- STEP 0 -->
