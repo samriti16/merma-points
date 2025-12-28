@@ -12,6 +12,7 @@ let useBackCamera = true;
 // ---------- DOM ----------
 const video = document.getElementById("video");
 const points = document.getElementById("points");
+
 const poseCanvas = document.getElementById("poseCanvas");
 const ctx = poseCanvas.getContext("2d");
 
@@ -20,6 +21,7 @@ const canvasArea = document.getElementById("canvasArea");
 
 const status2 = document.getElementById("status2");
 const statusText = document.getElementById("statusText");
+
 
 // ------------ CAMERA ------------
 async function startCamera(){
@@ -53,11 +55,13 @@ function resizeCanvas(){
 
 window.addEventListener("resize", resizeCanvas);
 
-// ---------- BUTTONS ----------
+
+// ---------- CAMERA SWITCH ----------
 function switchCamera(){
   useBackCamera = !useBackCamera;
   startCamera();
 }
+
 
 // ---------- ANGUL ----------
 function updateAngul(){
@@ -66,6 +70,7 @@ function updateAngul(){
   angulBox.style.width = angulPx+"px";
 }
 
+
 // ---------- HEIGHT ----------
 function updateHeight(){
   heightPx = +heightSlider.value;
@@ -73,6 +78,7 @@ function updateHeight(){
   angulTotal.innerText = totalAngul;
   heightBox.style.height = (heightPx/4)+"px";
 }
+
 
 // ---------- NAVIGATION ----------
 function goToFinger(){
@@ -96,10 +102,14 @@ function goToAR(){
   screen3.classList.remove("hidden");
 
   heightBox.classList.add("hidden");
-  points.classList.remove("hidden");
+  points.classList.add("hidden");   // ⛔ hidden until ANALYZE
+
+  canvasArea.classList.remove("hidden");
 
   startCamera();
+  startPoseTracking();               // live pose + skeleton only
 }
+
 
 // ------------- MEDIAPIPE -------------
 const pose = new Pose({
@@ -113,15 +123,17 @@ pose.setOptions({
   minTrackingConfidence:0.5
 });
 
-// drawing utils
 const POSE_CONNECTIONS = window.POSE_CONNECTIONS;
 
+
+// ------------ RECEIVE RESULTS ------------
 pose.onResults((results)=>{
 
   latestPose = results.poseLandmarks;
 
   drawSkeleton(results);
 });
+
 
 // ----------- SKELETON DRAW ----------
 function drawSkeleton(results){
@@ -133,7 +145,7 @@ function drawSkeleton(results){
   const vw = poseCanvas.width;
   const vh = poseCanvas.height;
 
-  // draw joints
+  // joints
   ctx.fillStyle="rgba(0,255,255,.9)";
 
   results.poseLandmarks.forEach(lm=>{
@@ -142,7 +154,7 @@ function drawSkeleton(results){
     ctx.fill();
   });
 
-  // draw bones
+  // bones
   ctx.strokeStyle="rgba(0,255,255,.7)";
   ctx.lineWidth=2;
 
@@ -158,13 +170,8 @@ function drawSkeleton(results){
   });
 }
 
-// ---------- ANALYZE BUTTON ----------
-async function analyze(){
-  await pose.send({image:video});
-  drawDynamicMarmaPoints();
-}
 
-// ---------- LIVE LOOP ----------
+// ---------- LIVE POSE LOOP ----------
 async function trackingLoop(){
   if(video.readyState>=2){
     await pose.send({image:video});
@@ -172,10 +179,22 @@ async function trackingLoop(){
   requestAnimationFrame(trackingLoop);
 }
 
-// call this once on AR screen
 function startPoseTracking(){
   trackingLoop();
 }
+
+
+// ---------- ANALYZE BUTTON ----------
+async function analyze(){
+
+  if(!latestPose){
+    await pose.send({image:video});
+  }
+
+  drawDynamicMarmaPoints();
+  points.classList.remove("hidden");
+}
+
 
 // ---------- MARMA POINTS ----------
 function drawDynamicMarmaPoints(){
@@ -210,32 +229,41 @@ function drawDynamicMarmaPoints(){
     dot.style.left=(lm.x*vw)+"px";
     dot.style.top =(lm.y*vh)+"px";
 
-    dot.onclick=()=>openPopup(m.name);
+    dot.onclick=()=>openPopup(m);
 
     points.appendChild(dot);
   });
 }
 
+
 // ---------- POPUP ----------
-function openPopup(name){
+function openPopup(m){
   popup.classList.remove("hidden");
-  pTitle.innerText=name;
-  pText.innerText="Skeletal overlay active — marma located by pose landmark.";
+
+  pTitle.innerText = m.name;
+
+  // placeholder – you will insert Sanskrit/Ayurveda later
+  pText.innerHTML = `
+    <b>Calculated landmark index:</b> ${m.id}<br>
+    <b>Mapped marma:</b> ${m.name}<br><br>
+    <i>Measurement basis:</i> Pose landmark detection with skeletal overlay.<br>
+    <i>Validation:</i> Match dot to joint visually on skeleton.
+  `;
 }
 
 function closePopup(){
   popup.classList.add("hidden");
 }
 
+
 // ---------- EXPORT ----------
 window.goToFinger=goToFinger;
 window.goToHeight=goToHeight;
-window.goToAR=()=>{
-  goToAR();
-  startPoseTracking();
-};
+window.goToAR=goToAR;
+
 window.updateAngul=updateAngul;
 window.updateHeight=updateHeight;
+
 window.switchCamera=switchCamera;
 window.analyze=analyze;
 window.closePopup=closePopup;
