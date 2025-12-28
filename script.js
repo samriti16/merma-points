@@ -137,18 +137,18 @@ pose.onResults((results) => {
 
 
 // ------------- START LIVE TRACKING -------------
-function startPoseTracking() {
+function startPoseTracking(){
 
-  const cam = new Camera(video, {
-    onFrame: async () => {
+  async function process() {
+    if (video.readyState >= 2) {
       await pose.send({ image: video });
-    },
-    width: 640,
-    height: 480
-  });
+    }
+    requestAnimationFrame(process);
+  }
 
-  cam.start();
+  process();
 }
+
 
 
 // ------------- DRAW MARMA POINTS -------------
