@@ -31,18 +31,16 @@ body{
   background:black;
   border:2px solid cyan;
   border-radius:12px;
-  z-index:1;
 }
 
 /* OVERLAY */
 #points{
   position:absolute;
   inset:0;
-  z-index:3;
-  pointer-events:none;   /* container ignores clicks */
+  pointer-events:none;
 }
 
-/* CLICKABLE DOTS  */
+/* CLICKABLE DOTS */
 .marma-point{
   width:18px;
   height:18px;
@@ -51,9 +49,16 @@ body{
   border-radius:50%;
   position:absolute;
   transform:translate(-50%,-50%);
-  pointer-events:auto;   /* clickable! */
+  pointer-events:auto;
   cursor:pointer;
-  z-index:4;
+}
+
+/* ANGUL FINGER BOX */
+.box{
+  border:2px dashed cyan;
+  width:42px;
+  height:120px;
+  margin:18px auto;
 }
 
 /* HEIGHT BOX */
@@ -66,7 +71,6 @@ body{
   height:200px;
   border:2px dashed yellow;
   pointer-events:none;
-  z-index:2;
 }
 
 /* POPUP */
@@ -84,8 +88,7 @@ body{
 }
 </style>
 
-<!-- Mediapipe -->
-<!-- USE SAME VERSION FOR BOTH -->
+<!-- Mediapipe (same version!) -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/pose.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.5/camera_utils.js"></script>
 
@@ -94,11 +97,11 @@ body{
 
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
 
-<!-- single reusable camera area -->
+<!-- CAMERA AREA -->
 <div id="canvasArea" class="hidden">
   <video id="video" autoplay playsinline muted></video>
   <div id="heightBox" class="hidden"></div>
-  <div id="points" class="hidden"></div>
+  <div id="points"></div>
 </div>
 
 <!-- STEP 0 -->
@@ -108,11 +111,11 @@ body{
 </div>
 
 <!-- STEP 1 -->
-  <div id="screen1" class="hidden">
+<div id="screen1" class="hidden">
   <h3>Step 1 — Measure Angul</h3>
   <p>Place finger & match width</p>
 
-  <div class="box" id="angulBox"></div>   
+  <div class="box" id="angulBox"></div>
 
   <input type="range" id="angulSlider" min="20" max="120" value="42" oninput="updateAngul()">
 
@@ -120,9 +123,11 @@ body{
 
   <button onclick="goToHeight()">Next → Height Measurement</button>
 </div>
+
 <!-- STEP 2 -->
 <div id="screen2" class="hidden">
   <h3>Step 2 — Measure Height</h3>
+
   <p id="status2">Camera loading…</p>
 
   <input type="range" id="heightSlider" min="300" max="1200" value="600" oninput="updateHeight()">
@@ -135,7 +140,6 @@ body{
 <!-- STEP 3 -->
 <div id="screen3" class="hidden">
   <p id="statusText">Point camera at full body</p>
-  <button onclick="analyze()">Analyze Body</button>
   <button onclick="switchCamera()">Switch Camera</button>
 </div>
 
@@ -146,7 +150,7 @@ body{
   <button onclick="closePopup()">Close</button>
 </div>
 
-<script src="script.js?v=3" defer></script>
+<script src="script.js?v=7" defer></script>
 
 </body>
 </html>
