@@ -56,15 +56,17 @@ body{
 }
 
 /* 📐 FINGER BOX */
+
+}
 .box{
   border:2px dashed cyan;
   width:42px;
   height:120px;
-  margin:auto;
+  margin:18px auto;
 }
 
 /* 📏 HEIGHT BOX */
-#heightBox{
+.heightBox{
   position:absolute;
   top:8%;
   left:50%;
