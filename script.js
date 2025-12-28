@@ -139,7 +139,8 @@ pose.setOptions({
 });
 
 pose.onResults((results)=>{
-  latestPose = results.poseLandmarks;
+  if(!latestPose || latestPose.length === 0) return;
+
   drawDynamicMarmaPoints();
 });
 
@@ -178,6 +179,8 @@ function drawDynamicMarmaPoints(){
     {id: 27, name:"Gulpha", txt:"Ankle marma"},
     {id: 28, name:"Gulpha", txt:"Ankle marma"}
   ];
+  console.log("drawing dots", latestPose?.length);
+
 
   const vw = video.clientWidth;
   const vh = video.clientHeight;
