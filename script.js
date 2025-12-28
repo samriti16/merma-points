@@ -26,31 +26,32 @@ const statusText = document.getElementById("statusText");
 // ---------- CAMERA ----------
 async function startCamera(){
 
-  if (mpCamera){
-    await mpCamera.stop();
-    mpCamera = null;
+  try {
+    if (currentStream)
+      currentStream.getTracks().forEach(t => t.stop());
+
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: useBackCamera ? "environment" : "user" },
+      audio: false
+    });
+
+    video.srcObject = currentStream;
+
+    await video.play();
+
+    video.onloadedmetadata = () => {
+      resizeCanvas();
+    };
+
+    if(status2) status2.innerText = "Camera Active ✔";
+    if(statusText) statusText.innerText = "Camera Active ✔";
+
+  } catch (err){
+    console.error("Camera failed:", err);
+    if(status2) status2.innerText = "Camera permission denied ❌";
   }
-
-  mpCamera = new Camera(video, {
-    onFrame: async () => {
-      await pose.send({image: video});
-
-      if(trackingActive){
-        drawDynamicMarmaPoints();
-      }
-    },
-    facingMode: useBackCamera ? "environment" : "user",
-    width: 480,
-    height: 640
-  });
-
-  await mpCamera.start();
-
-  if(status2) status2.innerText = "Camera Active ✔";
-  if(statusText) statusText.innerText = "Camera Active ✔";
-
-  resizeCanvas();
 }
+
 
 
 // ---------- MATCH CANVAS TO VIDEO ----------
