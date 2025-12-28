@@ -62,7 +62,7 @@ body{
   transform:translate(-50%,-50%);
   pointer-events:auto; /* dot IS clickable */
   cursor:pointer;
-  z-index:4;
+  z-index: 9999;
 }
 
 /* height box */
