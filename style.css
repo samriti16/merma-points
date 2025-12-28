@@ -7,105 +7,91 @@ body{
   margin:0;
 }
 
+/* hide blocks when needed */
 .hidden{
   display:none !important;
 }
 
-/* ---------- CAMERA AREA ---------- */
-/* wrapper controls all sizing */
+/* camera + overlays wrapper */
 #canvasArea{
   position:relative;
-  width:90vw;
+  width:92vw;
   max-width:480px;
   margin:10px auto;
 }
 
-/* VIDEO = base layer */
+/* VIDEO */
 #video{
   width:100%;
   display:block;
-  background:black;
   border:2px solid cyan;
-  border-radius:12px;
+  border-radius:14px;
 }
 
-/* SKELETON CANVAS exactly on video */
+/* skeleton overlay */
 #poseCanvas{
   position:absolute;
-  top:0;
-  left:0;
+  inset:0;
   width:100%;
   height:100%;
-  pointer-events:none;
   z-index:2;
+  pointer-events:none;
 }
 
-/* MARMA POINT OVERLAY on video */
+/* marma overlay */
 #points{
   position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  inset:0;
   z-index:3;
-  pointer-events:none; /* container ignores */
+  pointer-events:none; /* container ignores clicks */
 }
 
-/* clickable dots */
+/* clickable marma point */
 .marma-point{
   width:18px;
   height:18px;
   background:red;
   border:2px solid white;
   border-radius:50%;
+  transform:translate(-50%,-50%);
   position:absolute;
-  transform:translate(-50%, -50%);
+  pointer-events:auto; /* CLICKABLE! */
   cursor:pointer;
-  pointer-events:auto; /* but dots clickable */
+  z-index:4;
 }
 
-/* ---------- ANGUL FINGER BOX ---------- */
-.box{
-  border:2px dashed cyan;
-  width:42px;
-  height:120px;
-  margin:12px auto;
-}
-
-/* ---------- HEIGHT BOX ---------- */
+/* HEIGHT BOX */
 #heightBox{
   position:absolute;
-  top:6%;
-  left:50%;
-  transform:translateX(-50%);
+  inset:0;
+  margin:auto;
   border:2px dashed yellow;
   width:120px;
   height:200px;
   pointer-events:none;
-  z-index:4;
+  z-index:5;
 }
 
-/* ---------- STEP-2 MOBILE SPACING FIX ---------- */
+/* STEP 2 spacing reduced */
 #screen2{
   margin-top:4px;
 }
 
-/* reduce large gap on phones */
-#screen2 input[type=range]{
+/* sliders tighter */
+input[type=range]{
   margin-top:6px;
 }
 
-/* ---------- POPUP ---------- */
+/* popup */
 .popup{
   position:fixed;
-  bottom:20px;
+  bottom:14px;
   left:50%;
   transform:translateX(-50%);
+  width:88%;
   background:#111;
-  color:white;
-  padding:18px;
-  border-radius:14px;
+  padding:14px;
+  border-radius:12px;
   border:1px solid white;
-  width:85%;
   z-index:9999;
 }
