@@ -98,10 +98,15 @@ body{
 <h2>AR Based Marma Visualization<br>(Angul Parman Prototype)</h2>
 
 <!-- CAMERA AREA -->
+
 <div id="canvasArea" class="hidden">
   <video id="video" autoplay playsinline muted></video>
+
+  <!-- NEW canvas for skeleton -->
+  <canvas id="poseCanvas"></canvas>
+
   <div id="heightBox" class="hidden"></div>
-  <div id="points"></div>
+  <div id="points" class="hidden"></div>
 </div>
 
 <!-- STEP 0 -->
