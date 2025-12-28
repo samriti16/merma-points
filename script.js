@@ -49,9 +49,11 @@ async function startCamera(){
 }
 
 function resizeCanvas(){
-  poseCanvas.width = video.clientWidth;
-  poseCanvas.height = video.clientHeight;
+  const rect = video.getBoundingClientRect();
+  poseCanvas.width = rect.width;
+  poseCanvas.height = rect.height;
 }
+
 
 window.addEventListener("resize", resizeCanvas);
 
@@ -172,12 +174,18 @@ function drawSkeleton(results){
 
 
 // ---------- LIVE POSE LOOP ----------
+
 async function trackingLoop(){
-  if(video.readyState>=2){
+  if(video.readyState >= 2){
     await pose.send({image:video});
   }
   requestAnimationFrame(trackingLoop);
 }
+
+function startPoseTracking(){
+  requestAnimationFrame(trackingLoop);
+}
+
 
 function startPoseTracking(){
   trackingLoop();
@@ -187,13 +195,18 @@ function startPoseTracking(){
 // ---------- ANALYZE BUTTON ----------
 async function analyze(){
 
-  if(!latestPose){
-    await pose.send({image:video});
+  if(video.readyState < 2){
+    return;
   }
 
+  // force one fresh pose estimate
+  await pose.send({image:video});
+
+  // show points
   drawDynamicMarmaPoints();
   points.classList.remove("hidden");
 }
+
 
 
 // ---------- MARMA POINTS ----------
