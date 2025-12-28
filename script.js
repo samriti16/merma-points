@@ -51,9 +51,13 @@ async function startCamera(){
 
 // ---------- KEEP CANVAS MATCHING VIDEO ----------
 function resizeCanvas(){
-  poseCanvas.width = video.clientWidth;
-  poseCanvas.height = video.clientHeight;
+  poseCanvas.width  = video.videoWidth;
+  poseCanvas.height = video.videoHeight;
+
+  poseCanvas.style.width  = video.clientWidth + "px";
+  poseCanvas.style.height = video.clientHeight + "px";
 }
+
 window.addEventListener("resize", resizeCanvas);
 
 
