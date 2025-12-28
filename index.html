@@ -149,10 +149,14 @@ body{
 </div>
 
 <!-- STEP 3 -->
-<div id="screen3" class="hidden">
+  <div id="screen3" class="hidden">
   <p id="statusText">Point camera at full body</p>
-  <button onclick="analyze()">Analyze Body</button>
-  <button onclick="switchCamera()">Switch Camera</button>
+
+  <!-- buttons NOW directly under camera -->
+  <div style="margin-top:6px">
+    <button onclick="analyze()">Analyze Body</button>
+    <button onclick="switchCamera()">Switch Camera</button>
+  </div>
 </div>
 
 <!-- POPUP -->
