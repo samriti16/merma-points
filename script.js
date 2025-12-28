@@ -49,7 +49,7 @@ async function startCamera(){
 }
 
 
-// keep overlay equal to video
+// ---------- KEEP CANVAS IN SYNC ----------
 function resizeCanvas(){
   poseCanvas.width = video.clientWidth;
   poseCanvas.height = video.clientHeight;
@@ -81,7 +81,9 @@ function goToHeight(){
   startCamera();
 }
 
+// ----------- FINAL AR SCREEN -----------
 function goToAR(){
+
   screen2.classList.add("hidden");
   screen3.classList.remove("hidden");
 
@@ -91,6 +93,7 @@ function goToAR(){
   points.classList.add("hidden");
 
   startCamera();
+  startPoseTracking();
 }
 
 
@@ -111,26 +114,29 @@ function updateHeight(){
 }
 
 
-// ---------- MEDIAPIPE ----------
+// ---------- MEDIAPIPE POSE ----------
 const pose = new Pose({
-  locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5/${file}`
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${file}`
 });
 
+// REQUIRED to avoid WASM abort
+pose.initialize().catch(console.error);
+
 pose.setOptions({
-  modelComplexity:1,
-  smoothLandmarks:true,
-  minDetectionConfidence:0.5,
-  minTrackingConfidence:0.5
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
 });
 
 pose.onResults((results)=>{
   latestPose = results.poseLandmarks;
-
   drawSkeleton(results);
 });
 
 
-// ---------- SKELETON ----------
+// ---------- DRAW SKELETON ----------
 function drawSkeleton(results){
 
   ctx.clearRect(0,0,poseCanvas.width,poseCanvas.height);
@@ -169,12 +175,10 @@ function drawSkeleton(results){
 async function analyze(){
   trackingActive = true;
   points.classList.remove("hidden");
-  await pose.send({image:video});
-  drawDynamicMarmaPoints();
 }
 
 
-// ---------- LIVE TRACKING LOOP ----------
+// ---------- TRACKING LOOP ----------
 async function trackingLoop(){
   if(trackingActive && video.readyState>=2){
     await pose.send({image:video});
@@ -183,10 +187,13 @@ async function trackingLoop(){
   requestAnimationFrame(trackingLoop);
 }
 
-trackingLoop();
+async function startPoseTracking(){
+  await pose.initialize();
+  trackingLoop();
+}
 
 
-// ---------- MARMA CALC + POINTS ----------
+// ---------- MARMA POINTS ----------
 function drawDynamicMarmaPoints(){
 
   points.innerHTML="";
@@ -200,25 +207,13 @@ function drawDynamicMarmaPoints(){
   const mp = (id)=>latestPose[id];
 
   const marma = [
-    {
-      id:10,
-      name:"Śira Marma (Head)",
-      desc:"Controls sense organs and prana vayu. Trauma causes loss of consciousness."
-    },
-    {
-      id:12,
-      name:"Hṛdaya Marma (Heart)",
-      desc:"Seat of consciousness and ojas. Injury can be fatal."
-    },
-    {
-      id:24,
-      name:"Nābhi Marma (Navel)",
-      desc:"Controls digestion and abdominal organs."
-    },
+    { id:10, name:"Śira Marma (Head)", desc:"Controls sense organs and prāṇa vāyu."},
+    { id:12, name:"Hṛdaya Marma (Heart)", desc:"Seat of ojas and consciousness."},
+    { id:24, name:"Nābhi Marma (Navel)", desc:"Centre of digestion and metabolism."},
     { id:25, name:"Jānu Marma (Left Knee)", desc:"Supports locomotion."},
     { id:26, name:"Jānu Marma (Right Knee)", desc:"Supports locomotion."},
-    { id:27, name:"Gulpha Marma (Left Ankle)", desc:"Controls movement & stability."},
-    { id:28, name:"Gulpha Marma (Right Ankle)", desc:"Controls movement & stability."}
+    { id:27, name:"Gulpha Marma (Left Ankle)", desc:"Stability + movement."},
+    { id:28, name:"Gulpha Marma (Right Ankle)", desc:"Stability + movement."}
   ];
 
   marma.forEach(m=>{
@@ -238,7 +233,7 @@ function drawDynamicMarmaPoints(){
 
     dot.onclick=()=>openPopup(
       m.name,
-      m.desc + `\n\nCalculated Position: ${angulFromTop} Aṅgula from crown`
+      m.desc + `\n\n📏 Numerical Position: ${angulFromTop} Aṅgula from crown`
     );
 
     points.appendChild(dot);
@@ -258,7 +253,7 @@ function closePopup(){
 }
 
 
-// ---------- EXPORT ----------
+// ---------- EXPORT TO WINDOW ----------
 window.goToFinger=goToFinger;
 window.goToHeight=goToHeight;
 window.goToAR=goToAR;
