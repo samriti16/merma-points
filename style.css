@@ -36,18 +36,19 @@ body{
   width:100%;
   height:100%;
   z-index:2;
-  pointer-events:auto;
+  pointer-events:none;   /* container ignores clicks */
 }
 
-/* CLICKABLE RED DOTS */
-.mar-point{
-  width:16px;
-  height:16px;
+/* CLICKABLE RED DOTS  ✅ name matches JS */
+.marma-point{
+  width:18px;
+  height:18px;
   background:red;
   border:2px solid white;
   border-radius:50%;
   position:absolute;
   transform:translate(-50%, -50%);
+  pointer-events:auto;   /* dots clickable */
   cursor:pointer;
   z-index:3;
 }
@@ -87,19 +88,3 @@ body{
   width:85%;
   z-index:9999;
 }
-#points{
-  pointer-events:none;   /* overlay won't block clicks */
-}
-
-.mar-point{
-  pointer-events:auto;   /* BUT dots will still receive clicks */
-}
-#points{
-  pointer-events:none;      /* container ignores clicks */
-}
-
-.marma-point{
-  pointer-events:auto;      /* dots are clickable */
-  z-index:999;              /* above video */
-}
-
