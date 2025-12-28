@@ -15,7 +15,7 @@ body{
   position:relative;
   width:90vw;
   max-width:480px;
-  margin:auto;
+  margin-bottom: 6px;;
 }
 
 /* VIDEO */
@@ -99,9 +99,11 @@ body{
   width:85%;
   z-index:9999;
 }
+
 #screen2{
-  margin-top: 6px;
+  margin-top: 4px;
 }
+
 
 #heightSlider{
   margin-top: 4px;
